@@ -741,6 +741,9 @@ if hexo-config('nav.group')
     transition .3s
     border-radius 40px
 
+    +minWidth768()
+      position relative
+
     +maxWidth768()
       display: none
 
@@ -758,6 +761,9 @@ if hexo-config('nav.group')
         pointer-events auto
         left 1.5rem
         transform scale(1)
+
+        +minWidth768()
+          left 0
 
         +maxWidth768()
           padding-bottom 8px
@@ -795,6 +801,12 @@ if hexo-config('nav.group')
       backdrop-filter blur(20px)
       -webkit-backdrop-filter blur(20px)
 
+      +minWidth768()
+        left 0
+        background-color var(--efu-card-bg)
+        backdrop-filter none
+        -webkit-backdrop-filter none
+
       +maxWidth768()
         left 0
 
@@ -804,6 +816,12 @@ if hexo-config('nav.group')
     .back-menu-list
       .back-menu-item
         width 150px
+
+        +minWidth768()
+          gap 8px
+
+          .back-menu-item-text
+            margin-left 0
 
 .nav-fixed
   #nav
