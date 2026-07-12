@@ -1,3 +1,6 @@
+html.search-open
+  overflow hidden
+
 .search-dialog
   position fixed
   inset 0
@@ -53,6 +56,7 @@
   .search-wrap
     display flex
     min-height 0
+    overflow hidden
     flex-direction column
     gap 16px
 
@@ -113,6 +117,7 @@
     margin 0
     padding 0
     overflow-y auto
+    flex 1
     flex-direction column
     list-style none
 
@@ -144,7 +149,8 @@
           font-style normal
 
     .search-result-empty,
-    .search-result-error
+    .search-result-error,
+    .search-result-loading
       color var(--efu-secondtext)
 
   #search-pagination
@@ -245,7 +251,7 @@
 @media screen and (max-width: 767px)
   .search-dialog
     inset 0
-    width 100%
+    width 100vw
     height var(--search-height, 100dvh)
     max-height none
     margin 0
@@ -255,6 +261,9 @@
     &:hover
       border 0
       box-shadow var(--efu-shadow-lightblack)
+
+    .search-wrap
+      flex 1
 
     #search-results
       max-height none
