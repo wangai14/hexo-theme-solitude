@@ -1,4 +1,9 @@
 - page.type = is_post() ? 'post' : page.type
+- const bodyFriendLinksGroups = site.data.links && Array.isArray(site.data.links.links) ? site.data.links.links : []
+- const bodyFriendLinksTotal = bodyFriendLinksGroups.reduce((count, group) => count + (Array.isArray(group.link_list) ? group.link_list.length : 0), 0)
+- const configuredBodyFriendLinksThreshold = Number(theme.page && theme.page.links && theme.page.links.async_threshold)
+- const bodyFriendLinksThreshold = Number.isInteger(configuredBodyFriendLinksThreshold) && configuredBodyFriendLinksThreshold >= 0 ? configuredBodyFriendLinksThreshold : 200
+- const bodyFriendLinksAsync = bodyFriendLinksTotal > bodyFriendLinksThreshold
 
 mixin katex
   if theme.katex.copytex
@@ -14,6 +19,8 @@ div
   // Critical scripts loaded synchronously
   script(src=url_for(theme.cdn.utils))
   script(src=url_for(theme.cdn.main))
+  if bodyFriendLinksAsync
+    script(src=url_for(theme.cdn.friend_links))
   
   // Non-critical scripts loaded asynchronously
   script(async src=url_for(theme.cdn.waterfall))

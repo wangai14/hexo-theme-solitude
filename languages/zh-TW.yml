@@ -179,6 +179,14 @@ music:
   button: 返回首頁
 
 link:
+  loading: 正在載入友鏈...
+  error: 友鏈載入失敗，請稍後重試。
+  retry: 重新載入
+  default_sort: 預設排序
+  random_sort: 隨機排序
+  sort_label: 切換排序方式
+  scroll_left: 向左捲動
+  scroll_right: 向右捲動
   banner:
     toComment: 申請友鏈
     random: 點擊前往按鈕進入隨機一個友鏈，不保證跳轉網站的安全性和可用性。本次隨機到的是本站友鏈：⌈ ${name} ⌋

@@ -181,6 +181,14 @@ music:
   button: 返回首页
 
 link:
+  loading: 正在加载友链...
+  error: 友链加载失败，请稍后重试。
+  retry: 重新加载
+  default_sort: 默认排序
+  random_sort: 随机排序
+  sort_label: 切换排序方式
+  scroll_left: 向左滚动
+  scroll_right: 向右滚动
   banner:
     toComment: 申请友链
     random: 随机访问

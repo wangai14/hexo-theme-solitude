@@ -1330,6 +1330,7 @@ window.refreshFn = () => {
       )
     );
   randomlink && randomLinksList();
+  GLOBAL_CONFIG.friend_links.async && window.friendLinks?.init();
   if (is_post) {
     if (ai_text) {
       ai.init();

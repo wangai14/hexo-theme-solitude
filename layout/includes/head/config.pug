@@ -148,6 +148,30 @@
         }
     }
 
+    const friendLinksGroups = site.data.links && Array.isArray(site.data.links.links) ? site.data.links.links : []
+    const friendLinksTotal = friendLinksGroups.reduce((count, group) => count + (Array.isArray(group.link_list) ? group.link_list.length : 0), 0)
+    const configuredFriendLinksThreshold = Number(theme.page && theme.page.links && theme.page.links.async_threshold)
+    const friendLinksThreshold = Number.isInteger(configuredFriendLinksThreshold) && configuredFriendLinksThreshold >= 0 ? configuredFriendLinksThreshold : 200
+    const friendLinks = {
+        async: friendLinksTotal > friendLinksThreshold,
+        path: url_for('/links.json'),
+        total: friendLinksTotal,
+        placeholder: theme.lazyload.placeholder ? url_for(theme.lazyload.placeholder) : '',
+        default_avatar: url_for('/img/default_avatar.avif'),
+        more_url: url_for('/links/'),
+        loading: _p('link.loading'),
+        error: _p('link.error'),
+        retry: _p('link.retry'),
+        random: _p('link.random'),
+        to: _p('link.to'),
+        more: _p('more'),
+        default_sort: _p('link.default_sort'),
+        random_sort: _p('link.random_sort'),
+        sort_label: _p('link.sort_label'),
+        scroll_left: _p('link.scroll_left'),
+        scroll_right: _p('link.scroll_right')
+    }
+
 script.
     const GLOBAL_CONFIG = {
         root: '!{config.root}',
@@ -160,6 +184,7 @@ script.
         },
         copyright: !{copyright},
         highlight: !{highlight ? JSON.stringify(highlight) : false},
+        friend_links: !{JSON.stringify(friendLinks)},
         randomlink: !{theme.footer.randomlink},
         lang: !{JSON.stringify(lang)},
         aside: {

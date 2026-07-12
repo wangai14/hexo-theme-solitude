@@ -32,6 +32,7 @@ hexo.extend.filter.register("before_generate", () => {
     waterfall: { name, file: "js/third_party/waterfall.min.js", version },
     universe_js: { name, file: "js/third_party/universe.min.js", version },
     post_ai: { name, file: "js/post_ai.js", version },
+    friend_links: { name, file: "js/friend_links.js", version },
     envelope_js: { name, file: "js/third_party/envelope.min.js", version },
   };
 

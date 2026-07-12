@@ -82,6 +82,7 @@ hexo.extend.filter.register(
         tags: true,
         categories: true,
         archives: 0,
+        links: { async_threshold: 200 },
         default: { cover: ["/img/default.avif"] },
       },
       post: {

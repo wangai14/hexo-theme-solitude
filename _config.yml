@@ -216,6 +216,10 @@ page:
   # list: Sort List / 1: Follow HomeList
   # list: 排序列表 / 1: 跟随首页列表
   archives: 0
+  # Load friend links from JSON when the total exceeds this value
+  # 友链总数超过此值时通过 JSON 异步加载
+  links:
+    async_threshold: 200
   # Default value
   # 默认值
   default:

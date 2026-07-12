@@ -178,6 +178,14 @@ music:
   button: Volver al inicio
 
 link:
+  loading: Cargando enlaces de amigos...
+  error: No se pueden cargar los enlaces. Inténtalo de nuevo.
+  retry: Reintentar
+  default_sort: Orden predeterminado
+  random_sort: Orden aleatorio
+  sort_label: Cambiar orden
+  scroll_left: Desplazar a la izquierda
+  scroll_right: Desplazar a la derecha
   banner:
     toComment: Enlace de solicitud
     random: Visita aleatoria
