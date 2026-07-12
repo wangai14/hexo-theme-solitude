@@ -88,6 +88,13 @@ nav:
   randompost: Random post
   console: Console
 
+tooltip:
+  home: View all recommended posts
+  archives: View all posts
+  category: "View posts in ${name}"
+  categories: View all categories
+  category_next: Scroll categories
+
 award:
   thanks: Thanks
   tipping: Sponsor
@@ -99,6 +106,11 @@ search:
   placeholder: Enter keywords to search
   count: Total <b>${count}</b> results.
   load: Loading...
+  close: Close search
+  suggestions: Popular searches
+  ai_title: AI search
+  ai_text: Can't find the article? Try AI search
+  ai_recommend: Recommended
 
 head:
   noscript: Please enable JavaScript to view the site

@@ -39,7 +39,8 @@ mixin footerDeals()
         - const [url, iconClass] = value.split('||')
         +link(trim(url), '', { 
           class: 'deal_link',
-          title: label 
+          title: label,
+          heotip: label
         })
           +icon(iconClass)
 
@@ -47,6 +48,7 @@ mixin footerDeals()
       +conditionalWrapper(information.author)
         #footer_mini_logo.nolazyload.footer_mini_logo(
           title=_p('nav.backtop')
+          heotip=_p('nav.backtop')
           onclick="sco.toTop()"
         )
           img(src=information.author, alt=_p('nav.backtop'))
@@ -56,7 +58,8 @@ mixin footerDeals()
         - const [url, iconClass] = value.split('||')
         +link(trim(url), '', {
           class: 'deal_link',
-          title: label
+          title: label,
+          heotip: label
         })
           +icon(iconClass)
 
@@ -82,6 +85,7 @@ mixin footerGroups()
             button.random-friends-btn(
               onclick='randomLinksList()'
               title=_p('footer.randomlink')
+              heotip=_p('footer.randomlink')
             )
               +icon('fas fa-arrows-rotate')
           .footer-links#friend-links-in-footer
@@ -102,15 +106,22 @@ mixin beianInfo()
       each item in beian
         +link(item.url, '', {
           class: 'footer-bar-link',
-          title: item.name
+          title: item.name,
+          heotip: item.name
         })
           +conditionalWrapper(item.icon)
             if item.icon
               img.beian-icon(src=url_for(item.icon), alt=item.name)
           span.beian-name= item.name
     
-    +link(_p('hexo'), _p('framework_by') + 'Hexo', { class: 'footer-bar-link' })
-    +link(_p('repo'), _p('theme_by') + 'Solitude', { class: 'footer-bar-link' })
+    +link(_p('hexo'), _p('framework_by') + 'Hexo', {
+      class: 'footer-bar-link',
+      heotip: _p('framework_by') + 'Hexo'
+    })
+    +link(_p('repo'), _p('theme_by') + 'Solitude', {
+      class: 'footer-bar-link',
+      heotip: _p('theme_by') + 'Solitude'
+    })
 
 //- 页脚右侧链接组件
 mixin footerRightLinks()
@@ -120,7 +131,8 @@ mixin footerRightLinks()
         each item in theme.footer.links
           +link(item.url, '', {
             class: 'footer-bar-link',
-            alt: item.name
+            title: item.name,
+            heotip: item.name
           })
             if item.icon
               each icon in item.icon

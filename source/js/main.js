@@ -366,6 +366,59 @@ const initHomeCenter = () => {
   });
 };
 
+const initTooltip = () => {
+  const tooltip =
+    document.querySelector(".custom-tooltip") ||
+    document.body.appendChild(
+      Object.assign(document.createElement("div"), {
+        className: "custom-tooltip",
+      })
+    );
+
+  tooltip.style.opacity = "0";
+  tooltip.style.backdropFilter = "none";
+  if (!window.matchMedia("(hover: hover)").matches) return;
+
+  const rootFontSize = parseFloat(
+    getComputedStyle(document.documentElement).fontSize
+  );
+
+  document.querySelectorAll("[heotip]").forEach((element) => {
+    if (element.dataset.tooltipInitialized === "true") return;
+    element.dataset.tooltipInitialized = "true";
+
+    element.addEventListener("mouseenter", () => {
+      tooltip.textContent = element.getAttribute("heotip");
+      tooltip.style.left = "0";
+      tooltip.style.top = "0";
+      tooltip.style.backdropFilter = "blur(10px)";
+      tooltip.style.opacity = "1";
+
+      const targetRect = element.getBoundingClientRect();
+      const tooltipRect = tooltip.getBoundingClientRect();
+      const gap = 10;
+      const maxLeft = window.innerWidth - tooltipRect.width - rootFontSize;
+      const centeredLeft =
+        targetRect.left + (targetRect.width - tooltipRect.width) / 2;
+      const left = Math.max(rootFontSize, Math.min(centeredLeft, maxLeft));
+      const preferredTop =
+        targetRect.top >= tooltipRect.height + gap
+          ? targetRect.top - tooltipRect.height - gap
+          : targetRect.bottom + gap;
+      const maxTop = window.innerHeight - tooltipRect.height - rootFontSize;
+      const top = Math.max(rootFontSize, Math.min(preferredTop, maxTop));
+
+      tooltip.style.left = `${left}px`;
+      tooltip.style.top = `${top}px`;
+    });
+
+    element.addEventListener("mouseleave", () => {
+      tooltip.style.backdropFilter = "none";
+      tooltip.style.opacity = "0";
+    });
+  });
+};
+
 const initObserver = () => {
   const commentElement = document.getElementById("post-comment");
   const paginationElement = document.getElementById("pagination");
@@ -1209,6 +1262,45 @@ const forPostFn = () => {
   scrollFnToDo();
 };
 
+const initAboutCardGlow = () => {
+  const aboutPage = document.getElementById("about-page");
+  const canHover = window.matchMedia(
+    "(hover: hover) and (pointer: fine)"
+  ).matches;
+  if (!aboutPage || !canHover) return;
+
+  aboutPage.querySelectorAll(".author-content-item").forEach((card) => {
+    if (card.dataset.aboutGlowBound === "true") return;
+
+    const glow = document.createElement("div");
+    glow.className = "about-pointer-glow";
+    glow.setAttribute("aria-hidden", "true");
+    card.prepend(glow);
+    card.classList.add("about-glow-host");
+    card.dataset.aboutGlowBound = "true";
+
+    const updateGlowPosition = (event) => {
+      const rect = card.getBoundingClientRect();
+      const x = ((event.clientX - rect.left) / rect.width) * 100;
+      const y = ((event.clientY - rect.top) / rect.height) * 100;
+      card.style.setProperty("--about-glow-x", `${x}%`);
+      card.style.setProperty("--about-glow-y", `${y}%`);
+    };
+
+    card.addEventListener("pointerenter", (event) => {
+      updateGlowPosition(event);
+      card.classList.add("is-about-glow-active");
+    });
+    card.addEventListener("pointermove", updateGlowPosition);
+    card.addEventListener("pointerleave", () => {
+      card.classList.remove("is-about-glow-active");
+    });
+    card.addEventListener("pointercancel", () => {
+      card.classList.remove("is-about-glow-active");
+    });
+  });
+};
+
 window.refreshFn = () => {
   const { is_home, is_page, page, is_post, ai_text } = PAGE_CONFIG;
   const { runtime, lazyload, lightbox, randomlink, covercolor, lure, expire } =
@@ -1220,6 +1312,7 @@ window.refreshFn = () => {
   [
     scrollFn,
     sidebarFn,
+    initTooltip,
     sco.addPhotoFigcaption,
     sco.setTimeState,
     sco.tagPageActive,
@@ -1262,6 +1355,7 @@ window.refreshFn = () => {
   if (PAGE_CONFIG.toc) toc.init();
   if (lure) tabs.lureAddListener();
   page === "music" && initializeMusicPlayer();
+  initAboutCardGlow();
   forPostFn();
 };
 

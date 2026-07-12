@@ -243,6 +243,10 @@ hexo.extend.filter.register(
         enable: false,
         type: "local",
         tags: [],
+        ai: {
+          enable: false,
+          url: null,
+        },
         algolia: null,
         local: {
           preload: false,

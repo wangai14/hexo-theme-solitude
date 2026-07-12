@@ -16,5 +16,5 @@
             .social-icons.is-center
                 each value, label in theme.aside.my_card.information || {}
                     - var array = value.split('||')
-                    a.social-icon(href=url_for(trim(array[0])), title=label)
+                    a.social-icon(href=url_for(trim(array[0])), title=label, heotip=label)
                         i.solitude(class=array[1])

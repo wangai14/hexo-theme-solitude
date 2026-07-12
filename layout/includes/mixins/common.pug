@@ -17,6 +17,7 @@ mixin link(url, text, options)
   - var className = options.class
   - var id = options.id
   - var onclick = options.onclick
+  - var heotip = options.heotip
   a(
     href=url_for(url)
     title=title
@@ -24,6 +25,7 @@ mixin link(url, text, options)
     class=className
     id=id
     onclick=onclick
+    heotip=heotip
   )
     if text
       = text

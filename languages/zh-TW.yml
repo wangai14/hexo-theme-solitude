@@ -48,6 +48,13 @@ nav:
   randompost: 隨機一篇文章
   console: 主控台
 
+tooltip:
+  home: 查看所有推薦文章
+  archives: 查看所有文章
+  category: "前往 ${name} 分類的文章"
+  categories: 查看所有分類
+  category_next: 分類列翻頁
+
 home:
   home: 推薦
   sticky: 置頂
@@ -100,6 +107,11 @@ search:
   placeholder: 輸入關鍵詞快速查找
   count: 共 <b>${count}<b> 條結果。
   load: 加載中...
+  close: 關閉搜尋
+  suggestions: 熱門搜尋
+  ai_title: AI 搜尋
+  ai_text: 找不到想要的文章？試試AI搜尋
+  ai_recommend: 推薦
 
 head:
   noscript: 開啟JavaScript才能訪問本站哦~

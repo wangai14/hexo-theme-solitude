@@ -88,6 +88,13 @@ nav:
   randompost: Publicación aleatoria
   console: Consola
 
+tooltip:
+  home: Ver todos los artículos recomendados
+  archives: Ver todos los artículos
+  category: "Ver artículos en ${name}"
+  categories: Ver todas las categorías
+  category_next: Desplazar categorías
+
 award:
   thanks: Gracias
   tipping: Patrocinar
@@ -99,6 +106,11 @@ search:
   placeholder: Ingresa palabras clave para buscar
   count: Total <b>${count}</b> resultados.
   load: Cargando...
+  close: Cerrar búsqueda
+  suggestions: Búsquedas populares
+  ai_title: Búsqueda con IA
+  ai_text: ¿No encuentras el artículo? Prueba la búsqueda con IA
+  ai_recommend: Recomendado
 
 head:
   noscript: Por favor habilita JavaScript para ver el sitio

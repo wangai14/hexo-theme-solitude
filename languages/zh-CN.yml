@@ -48,6 +48,13 @@ nav:
   randompost: 随机一篇文章
   console: 中控台
 
+tooltip:
+  home: 查看所有推荐文章
+  archives: 查看所有文章
+  category: "前往 ${name} 分类的文章"
+  categories: 查看所有分类
+  category_next: 分类条翻页
+
 home:
   home: 推荐
   sticky: 置顶
@@ -100,6 +107,11 @@ search:
   placeholder: 输入关键词快速查找
   count: 共 <b>${count}</b> 条结果。
   load: 搜索中...
+  close: 关闭搜索
+  suggestions: 热门搜索
+  ai_title: AI 搜索
+  ai_text: 找不到想要的文章？试试AI搜索
+  ai_recommend: 推荐
 
 head:
   noscript: 开启JavaScript才能访问本站哦~

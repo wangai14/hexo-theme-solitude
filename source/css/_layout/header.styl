@@ -332,10 +332,11 @@
       overflow hidden
       transition .3s
 
-    #nav #menus > .menus_items > .menus_item:hover > .site-page
-      background var(--efu-none)
-      box-shadow none
-      color var(--efu-white)
+    &:not(.not-top-img)
+      #nav #menus > .menus_items > .menus_item:hover > .site-page
+        background var(--efu-none)
+        box-shadow none
+        color var(--efu-white)
 
 #nav
   padding 0
@@ -420,7 +421,6 @@
       justify-content center
       font-size 22px
       line-height 1
-      color var(--efu-card-bg)
       color var(--efu-nav-hover-text)
 
     if hexo-config('site.name.class') == i_class
@@ -899,8 +899,8 @@ if hexo-config('nav.group')
     &:hover
       background var(--efu-lighttext)
 
-    &:hover
-      background var(--efu-lighttext)
+  &:hover
+    background var(--efu-lighttext)
 
     .back-menu-item-text
       color var(--efu-nav-hover-text)
