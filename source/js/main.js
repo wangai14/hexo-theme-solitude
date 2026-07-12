@@ -33,10 +33,13 @@ const sidebarFn = () => {
 const scrollFn = () => {
   const $rightside = document.getElementById("rightside");
   const $header = document.getElementById("page-header");
-  let initTop = 0;
+  let initTop = window.scrollY || document.documentElement.scrollTop;
 
   const updateHeaderAndRightside = (isDown, currentTop) => {
-    if (currentTop > 0) {
+    const isAtTop = currentTop <= 0;
+    $header.classList.toggle("nav-at-top", isAtTop);
+
+    if (!isAtTop) {
       $header.classList.toggle("nav-visible", !isDown);
       $header.classList.add("nav-fixed");
       if ($rightside) {
@@ -52,7 +55,7 @@ const scrollFn = () => {
     }
   };
 
-  const throttledScroll = utils.throttle(() => {
+  const handleScroll = utils.throttle(() => {
     initThemeColor();
     const currentTop = window.scrollY || document.documentElement.scrollTop;
     const isDown = currentTop > initTop;
@@ -60,15 +63,22 @@ const scrollFn = () => {
     updateHeaderAndRightside(isDown, currentTop);
   }, 200);
 
-  window.addEventListener("scroll", (e) => {
-    throttledScroll(e);
-    if (window.scrollY === 0) {
-      $header.classList.remove("nav-fixed", "nav-visible");
-      if ($rightside) {
-        $rightside.style.cssText = "opacity: ''; transform: ''";
-      }
+  const onScroll = () => {
+    const currentTop = window.scrollY || document.documentElement.scrollTop;
+    if (currentTop <= 0) {
+      initTop = 0;
+      updateHeaderAndRightside(false, 0);
+      return;
     }
-  });
+    handleScroll();
+  };
+
+  if (window.navScrollHandler) {
+    window.removeEventListener("scroll", window.navScrollHandler);
+  }
+  window.navScrollHandler = onScroll;
+  window.addEventListener("scroll", window.navScrollHandler, { passive: true });
+  updateHeaderAndRightside(false, initTop);
 };
 
 const percent = () => {
