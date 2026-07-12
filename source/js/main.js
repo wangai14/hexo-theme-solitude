@@ -117,6 +117,238 @@ const showTodayCard = () => {
   topGroup?.addEventListener("mouseleave", () => el?.classList.remove("hide"));
 };
 
+const initHomeCenter = () => {
+  const container = document.getElementById("home_center");
+  if (!container || container.dataset.initialized === "true") return;
+  container.dataset.initialized = "true";
+
+  const banners = [...container.querySelectorAll(".home-center-banner-item")];
+  const items = [...container.querySelectorAll(".home-center-item")];
+  const indicators = [
+    ...container.querySelectorAll(".home-center-indicator"),
+  ];
+  const banner = container.querySelector(".home-center-banner");
+  const titleLink = container.querySelector(".home-center-title-link");
+  const titleTag = container.querySelector(".home-center-title-tag span");
+  const categoryBar = document.getElementById("category-bar");
+  let activeIndex = 0;
+  let scrollFrame;
+
+  const getCachedColor = (src) => {
+    try {
+      const cache = JSON.parse(localStorage.getItem("Solitude")) || {};
+      const item = cache.postcolor?.[src];
+      if (item && (!item.expiration || item.expiration > Date.now())) {
+        return item.value;
+      }
+    } catch (error) {
+      return null;
+    }
+    return null;
+  };
+
+  const cacheColor = (src, color) => {
+    try {
+      const cache = JSON.parse(localStorage.getItem("Solitude")) || {};
+      cache.postcolor = cache.postcolor || {};
+      cache.postcolor[src] = {
+        value: color,
+        expiration: Date.now() + 43200000,
+      };
+      localStorage.setItem("Solitude", JSON.stringify(cache));
+    } catch (error) {
+      // Color caching is optional; rendering must continue without storage.
+    }
+  };
+
+  const rgbToThemeHex = ([r, g, b]) =>
+    `#${[r, g, b]
+      .map((value) =>
+        Math.floor(value * 0.8)
+          .toString(16)
+          .padStart(2, "0")
+      )
+      .join("")}`;
+
+  const getAverageColor = (image) => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 32;
+    canvas.height = 32;
+    const context = canvas.getContext("2d", { willReadFrequently: true });
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
+    const color = [0, 0, 0];
+    let count = 0;
+    for (let index = 0; index < pixels.length; index += 4) {
+      if (pixels[index + 3] < 128) continue;
+      color[0] += pixels[index];
+      color[1] += pixels[index + 1];
+      color[2] += pixels[index + 2];
+      count++;
+    }
+    return count ? color.map((value) => Math.round(value / count)) : null;
+  };
+
+  const normalizeHomeCenterColor = (value) => {
+    const match = value?.match(/^#([0-9a-f]{6})$/i);
+    if (!match) return value;
+    const number = parseInt(match[1], 16);
+    const rgb = [number >> 16, (number >> 8) & 0xff, number & 0xff];
+    const brightness = Math.round(
+      (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000
+    );
+    if (brightness >= 125) return value;
+    return `#${rgb
+      .map((channel) => Math.min(channel + 50, 255).toString(16).padStart(2, "0"))
+      .join("")}`;
+  };
+
+  const applyItemColor = (index, color) => {
+    if (!color || !banners[index]) return;
+    const colorOp = `color-mix(in srgb, ${color} 14%, transparent)`;
+    const colorDeep = `color-mix(in srgb, ${color} 87%, transparent)`;
+    banners[index].style.setProperty("--home-center-theme", color);
+    banners[index].style.setProperty("--home-center-theme-op", colorOp);
+    banners[index].style.setProperty("--home-center-theme-op-deep", colorDeep);
+    items[index]?.style.setProperty("--item-theme", color);
+    items[index]?.style.setProperty("--item-theme-op", colorOp);
+    items[index]?.style.setProperty("--item-theme-op-deep", colorDeep);
+    if (activeIndex === index) select(index);
+  };
+
+  const extractItemColor = (index, sourceImage) => {
+    if (banners[index].dataset.color) return;
+    const src = sourceImage.currentSrc || sourceImage.src;
+    if (!src) return;
+    const cachedColor = getCachedColor(src);
+    if (cachedColor) {
+      applyItemColor(index, normalizeHomeCenterColor(cachedColor));
+      return;
+    }
+
+    const image = new Image();
+    image.crossOrigin = "Anonymous";
+    image.onload = () => {
+      if (!container.isConnected) return;
+      try {
+        const rgb =
+          typeof ColorThief === "function"
+            ? new ColorThief().getColor(image)
+            : getAverageColor(image);
+        if (!rgb) return;
+        const color = rgbToThemeHex(rgb);
+        cacheColor(src, color);
+        applyItemColor(index, normalizeHomeCenterColor(color));
+      } catch (error) {
+        // Canvas access can fail for image hosts without CORS support.
+      }
+    };
+    image.onerror = () => {};
+    image.src = src;
+  };
+
+  const navigate = (link, event) => {
+    if (!link) return;
+    if (event?.metaKey || event?.ctrlKey) {
+      window.open(link, "_blank");
+    } else if (typeof pjax === "object" && pjax.loadUrl) {
+      pjax.loadUrl(link);
+    } else {
+      window.location.href = link;
+    }
+  };
+
+  const select = (index) => {
+    if (!banners[index]) return;
+    activeIndex = index;
+    banners.forEach((banner, bannerIndex) => {
+      const isActive = bannerIndex === index;
+      banner.classList.toggle("active", isActive);
+      banner.setAttribute("aria-hidden", String(!isActive));
+      banner.tabIndex = isActive ? 0 : -1;
+    });
+    items.forEach((item, itemIndex) => {
+      const isActive = itemIndex === index;
+      item.classList.toggle("active", isActive);
+      item.setAttribute("aria-current", String(isActive));
+    });
+    indicators.forEach((indicator, indicatorIndex) =>
+      indicator.classList.toggle("active", indicatorIndex === index)
+    );
+    const selected = banners[index];
+    const selectedStyle = getComputedStyle(selected);
+    const color = selectedStyle.getPropertyValue("--home-center-theme").trim();
+    const colorOp = selectedStyle
+      .getPropertyValue("--home-center-theme-op")
+      .trim();
+    const colorDeep = selectedStyle
+      .getPropertyValue("--home-center-theme-op-deep")
+      .trim();
+    titleLink.textContent = selected.dataset.title;
+    titleLink.href = selected.dataset.link;
+    titleTag.textContent = selected.dataset.label;
+    container.style.setProperty("--current-theme", color);
+    container.style.setProperty("--current-theme-op", colorOp);
+    container.style.setProperty("--current-theme-op-deep", colorDeep);
+    categoryBar?.style.setProperty("--current-banner-theme", color);
+  };
+
+  items.forEach((item, index) => {
+    item.addEventListener("mouseenter", () => select(index));
+    item.addEventListener("focusin", () => select(index));
+  });
+  banners.forEach((item, index) => {
+    let pointerType = "";
+    item.addEventListener(
+      "pointerdown",
+      (event) => (pointerType = event.pointerType),
+      true
+    );
+    item.addEventListener("click", (event) => {
+      if (pointerType === "touch" && window.innerWidth <= 768) {
+        event.preventDefault();
+        select(index);
+      } else {
+        navigate(item.dataset.link, event);
+      }
+      pointerType = "";
+    });
+    item.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        navigate(item.dataset.link, event);
+      }
+    });
+  });
+  indicators.forEach((indicator, index) => {
+    indicator.addEventListener("click", (event) => {
+      event.preventDefault();
+      select(index);
+      banner.scrollTo({ left: banner.clientWidth * index, behavior: "smooth" });
+    });
+  });
+  banner.addEventListener("scroll", () => {
+    cancelAnimationFrame(scrollFrame);
+    scrollFrame = requestAnimationFrame(() => {
+      if (window.innerWidth > 768 || !banner.clientWidth) return;
+      select(Math.round(banner.scrollLeft / banner.clientWidth));
+    });
+  });
+  select(0);
+  banners.forEach((item, index) => {
+    if (item.dataset.color) return;
+    const image = item.querySelector(".home-center-cover-img");
+    if (!image) return;
+    if (image.complete && image.naturalWidth) {
+      extractItemColor(index, image);
+    } else {
+      image.addEventListener("load", () => extractItemColor(index, image), {
+        once: true,
+      });
+    }
+  });
+};
+
 const initObserver = () => {
   const commentElement = document.getElementById("post-comment");
   const paginationElement = document.getElementById("pagination");
@@ -940,6 +1172,7 @@ window.refreshFn = () => {
   initObserver();
   if (is_home) {
     showTodayCard();
+    initHomeCenter();
     sco.homeTypeit();
   }
   typeof updatePostsBasedOnComments === "function" &&
