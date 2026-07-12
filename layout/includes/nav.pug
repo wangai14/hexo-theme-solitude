@@ -19,7 +19,7 @@ mixin siteName()
         span.title= theme.site.name.custom
     +icon('fas fa-home')
 
-nav#nav.show
+nav#nav.show(onclick="sco.onNavBlankClickCloseConsole(event)")
     #nav-group
         #blog_name
             //- 分组导航按钮

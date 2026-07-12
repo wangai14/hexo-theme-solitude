@@ -17,7 +17,7 @@
         color var(--efu-fontcolor)
 
         &:hover
-          color var(--efu-card-bg)
+          color var(--efu-nav-hover-text)
 
   &:not(.nav-fixed)
     #nav
@@ -332,6 +332,11 @@
       overflow hidden
       transition .3s
 
+    #nav #menus > .menus_items > .menus_item:hover > .site-page
+      background var(--efu-none)
+      box-shadow none
+      color var(--efu-white)
+
 #nav
   padding 0
   position absolute
@@ -395,7 +400,7 @@
     &:hover
       @media (hover: hover)
         i, span, img
-          color var(--efu-card-bg)
+          color var(--efu-nav-hover-text)
           transition .3s
 
       +minWidth900()
@@ -416,6 +421,7 @@
       font-size 22px
       line-height 1
       color var(--efu-card-bg)
+      color var(--efu-nav-hover-text)
 
     if hexo-config('site.name.class') == i_class
       i
@@ -556,7 +562,7 @@
 
             &:hover
               background var(--efu-lighttext)
-              color var(--efu-card-bg)
+              color var(--efu-nav-hover-text)
               box-shadow var(--efu-shadow-main)
               margin 0 auto
               transform scale(1)
@@ -600,7 +606,7 @@
       &:hover
         > .site-page
           background var(--efu-main)
-          color var(--efu-card-bg)
+          color var(--efu-nav-hover-text)
           box-shadow var(--efu-shadow-main)
 
         .menus_item_child
@@ -743,7 +749,7 @@ if hexo-config('nav.group')
 
     &:hover
       background var(--efu-main)
-      color var(--efu-card-bg)
+      color var(--efu-nav-hover-text)
 
       .back-menu-list-groups
         display flex
@@ -807,7 +813,7 @@ if hexo-config('nav.group')
 
       &:hover
         background var(--efu-lighttext)
-        color var(--efu-card-bg)
+        color var(--efu-nav-hover-text)
         transition .3s
 
     #site-name
@@ -821,7 +827,7 @@ if hexo-config('nav.group')
 
         &:hover
           background var(--efu-lighttext)
-          color var(--efu-card-bg)
+          color var(--efu-nav-hover-text)
 
     .menus_item
       &:hover
@@ -893,11 +899,11 @@ if hexo-config('nav.group')
     &:hover
       background var(--efu-lighttext)
 
-  &:hover
-    background var(--efu-lighttext)
+    &:hover
+      background var(--efu-lighttext)
 
     .back-menu-item-text
-      color var(--efu-card-bg)
+      color var(--efu-nav-hover-text)
 
   .back-menu-item-icon
     width 24px
@@ -918,7 +924,7 @@ if hexo-config('nav.group')
   #nav
     a
       &:hover
-        color var(--efu-card-bg)
+        color var(--efu-nav-hover-text)
         background var(--efu-main)
         transition .3s
         box-shadow var(--efu-shadow-main)
@@ -926,13 +932,13 @@ if hexo-config('nav.group')
     #site-name
       &:hover
         i
-          color var(--efu-card-bg)
+          color var(--efu-nav-hover-text)
 
   .menus_item
     &:hover
       & > a.site-page
         +minWidth768()
-          color var(--efu-card-bg) !important
+          color var(--efu-nav-hover-text) !important
           background var(--efu-main)
           box-shadow var(--efu-shadow-main)
 
@@ -1013,6 +1019,32 @@ if hexo-config('nav.group')
       transform scale(1.05)
 
 if hexo-config('console.enable')
+  #page-header.console-open
+    #nav
+      z-index 10000
+
+      #nav-right
+        #nav-console
+          .console_switchbutton.console-open
+            label
+              i
+                width 100%
+                height .2rem
+                top calc(50% - .1rem)
+                bottom auto
+                left 0
+                right auto
+
+                &.left
+                  transform rotate(45deg)
+
+                &.center
+                  opacity 0
+                  transform scale(0)
+
+                &.right
+                  transform rotate(-45deg)
+
   #nav-console
     +maxWidth768()
       display none

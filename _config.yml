@@ -331,6 +331,9 @@ post:
 theme_color:
   dark: "#ffc848" # dark
   light: "#425AEF" # light
+  nav_hover_text:
+    dark: "#1b1c20" # Navigation hover text in dark mode
+    light: "#ffffff" # Navigation hover text in light mode
 # --------------------------- end ---------------------------
 
 # --------------------------- start ---------------------------

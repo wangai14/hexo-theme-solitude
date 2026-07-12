@@ -440,6 +440,7 @@ const sco = {
   lastWittyWord: "",
   wasPageHidden: false,
   musicPlaying: false,
+  consoleNavState: null,
   scrollTo(elementId) {
     const targetElement = document.getElementById(elementId);
     if (targetElement) {
@@ -561,10 +562,66 @@ const sco = {
   hideTodayCard: () =>
     document.getElementById("todayCard").classList.add("hide"),
   toTop: () => utils.scrollToDest(0),
-  showConsole: () =>
-    document.getElementById("console")?.classList.toggle("show", true),
-  hideConsole: () =>
-    document.getElementById("console")?.classList.remove("show"),
+  showConsole() {
+    const consoleElement = document.getElementById("console");
+    if (!consoleElement || consoleElement.classList.contains("show")) return;
+
+    const header = document.getElementById("page-header");
+    if (header) {
+      this.consoleNavState = {
+        fixed: header.classList.contains("nav-fixed"),
+        visible: header.classList.contains("nav-visible"),
+      };
+      header.classList.add("nav-fixed");
+      header.classList.remove("nav-visible");
+      header.classList.add("console-open");
+    }
+
+    consoleElement.classList.add("show");
+    document
+      .querySelector("#nav-console .console_switchbutton")
+      ?.classList.add("console-open");
+  },
+  hideConsole() {
+    const consoleElement = document.getElementById("console");
+    if (!consoleElement?.classList.contains("show")) return;
+
+    consoleElement.classList.remove("show");
+    document
+      .querySelector("#nav-console .console_switchbutton")
+      ?.classList.remove("console-open");
+
+    const header = document.getElementById("page-header");
+    if (header && this.consoleNavState) {
+      header.classList.remove("console-open");
+      header.classList.toggle("nav-fixed", this.consoleNavState.fixed);
+      header.classList.toggle("nav-visible", this.consoleNavState.visible);
+    }
+    this.consoleNavState = null;
+  },
+  toggleConsole() {
+    const consoleElement = document.getElementById("console");
+    if (consoleElement?.classList.contains("show")) {
+      this.hideConsole();
+    } else {
+      this.showConsole();
+    }
+  },
+  onConsoleCardGroupClick(event) {
+    if (event.target.closest?.(".console-card")) return;
+    this.hideConsole();
+  },
+  onNavBlankClickCloseConsole(event) {
+    if (!document.getElementById("console")?.classList.contains("show")) return;
+    if (
+      event.target.closest?.(
+        "a, button, .back-home-button, .menus_item, #page-name"
+      )
+    ) {
+      return;
+    }
+    this.hideConsole();
+  },
   refreshWaterFall() {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {

@@ -136,6 +136,10 @@ hexo.extend.filter.register(
       theme_color: {
         dark: "#ffc848",
         light: "#425AEF",
+        nav_hover_text: {
+          dark: "#1b1c20",
+          light: "#ffffff",
+        },
       },
       display_mode: {
         type: "auto",

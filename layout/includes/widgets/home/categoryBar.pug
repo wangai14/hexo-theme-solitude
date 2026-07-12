@@ -4,7 +4,11 @@
       span.category-bar-link-icon
         i.solitude.fas.fa-star
       span= __('home.home')
-  .category-bar-item(data-default-order='1')
+  .category-bar-item(
+    class=is_archive() ? 'select' : ''
+    id='archives'
+    data-default-order='1'
+  )
     a(href=url_for('/archives/'), title=__('home.archives'))
       span.category-bar-link-icon
         i.solitude.fas.fa-book
