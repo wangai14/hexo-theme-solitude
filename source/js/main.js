@@ -55,14 +55,15 @@ const scrollFn = () => {
     }
   };
 
-  const handleScroll = utils.throttle(() => {
+  const handleScroll = () => {
     initThemeColor();
     const currentTop = window.scrollY || document.documentElement.scrollTop;
     const isDown = currentTop > initTop;
     initTop = currentTop;
     updateHeaderAndRightside(isDown, currentTop);
-  }, 200);
+  };
 
+  let ticking = false;
   const onScroll = () => {
     const currentTop = window.scrollY || document.documentElement.scrollTop;
     if (currentTop <= 0) {
@@ -70,7 +71,13 @@ const scrollFn = () => {
       updateHeaderAndRightside(false, 0);
       return;
     }
-    handleScroll();
+    if (!ticking) {
+      window.requestAnimationFrame(() => {
+        handleScroll();
+        ticking = false;
+      });
+      ticking = true;
+    }
   };
 
   if (window.navScrollHandler) {
