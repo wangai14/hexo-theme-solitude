@@ -43,7 +43,7 @@ const scrollFn = () => {
       $header.classList.toggle("nav-visible", !isDown);
       $header.classList.add("nav-fixed");
       if ($rightside) {
-        $rightside.style.opacity = "0.8";
+        $rightside.style.opacity = "1";
         $rightside.style.transform = "translateX(-58px)";
       }
     } else {
@@ -502,47 +502,75 @@ const sco = {
       window.scroll({ top: targetPosition, behavior: "smooth" });
     }
   },
-  musicBind() {
-    const $music = document.querySelector("#nav-music meting-js");
-    if ($music && $music.aplayer) { 
-      this.isMusicBind = true;
-      $music.onclick = () => this.musicPlaying && this.musicToggle(true);
-      $music.aplayer.on('loadeddata', () =>{
-        coverColor(true);
-      })
-    }
-  },
-  musicToggle(isMeting = true) {
-    if (!this.isMusicBind) this.musicBind();
-    
-    const $music = document.querySelector("#nav-music");
-    const $meting = document.querySelector("#nav-music meting-js");
+  syncMusicState(isPlaying) {
+    const $music = document.getElementById("nav-music");
     const $console = document.getElementById("consoleMusic");
-    
-    this.musicPlaying = !this.musicPlaying;
-    
-    $music.classList.toggle("playing", this.musicPlaying);
-    $music.classList.toggle("stretch", this.musicPlaying);
+    this.musicPlaying = Boolean(isPlaying);
+
+    $music?.classList.toggle("playing", this.musicPlaying);
+    $music?.classList.toggle("stretch", this.musicPlaying);
     $console?.classList.toggle("on", this.musicPlaying);
-    
-    if (typeof rm !== "undefined" && rm?.menuItems.music[0]) {
+
+    if (
+      typeof rm !== "undefined" &&
+      rm?.menuItems?.music?.[0]
+    ) {
       const $rmText = document.querySelector("#menu-music-toggle span");
       const $rmIcon = document.querySelector("#menu-music-toggle i");
-      $rmText.textContent = this.musicPlaying 
-        ? GLOBAL_CONFIG.right_menu.music.stop
-        : GLOBAL_CONFIG.right_menu.music.start;
-      $rmIcon.className = `solitude fas ${this.musicPlaying ? 'fa-pause' : 'fa-play'}`;
+      if ($rmText) {
+        $rmText.textContent = this.musicPlaying
+          ? GLOBAL_CONFIG.right_menu.music.stop
+          : GLOBAL_CONFIG.right_menu.music.start;
+      }
+      if ($rmIcon) {
+        $rmIcon.className = `solitude fas ${this.musicPlaying ? "fa-pause" : "fa-play"}`;
+      }
+    }
+  },
+  musicBind() {
+    const $meting = document.querySelector("#nav-music meting-js");
+    const aplayer = $meting?.aplayer;
+    if (!aplayer) {
+      this.isMusicBind = false;
+      return null;
     }
 
-    if (isMeting && $meting) {
-      this.musicPlaying ? $meting.aplayer.play() : $meting.aplayer.pause();
+    this.isMusicBind = true;
+    if (!aplayer.solitudeCapsuleBound) {
+      aplayer.on("play", () => this.syncMusicState(true));
+      aplayer.on("pause", () => this.syncMusicState(false));
+      aplayer.on("ended", () => this.syncMusicState(false));
+      aplayer.on("loadeddata", () => {
+        if (typeof coverColor === "function") coverColor(true);
+        this.syncMusicState(Boolean(aplayer.audio && !aplayer.audio.paused));
+      });
+      aplayer.solitudeCapsuleBound = true;
     }
+
+    this.syncMusicState(Boolean(aplayer.audio && !aplayer.audio.paused));
+    return aplayer;
+  },
+  handleMusicClick(event) {
+    if (event.target?.closest?.(".music-control-btn")) return;
+    if (!this.musicPlaying) this.musicToggle();
+  },
+  musicToggle(isMeting = true) {
+    const aplayer = this.musicBind();
+    if (!aplayer) return;
+
+    const shouldPlay = Boolean(aplayer.audio?.paused);
+    if (!isMeting) {
+      this.syncMusicState(shouldPlay);
+      return;
+    }
+
+    shouldPlay ? aplayer.play() : aplayer.pause();
   },
   musicSkipBack() {
-    document.querySelector("meting-js")?.aplayer?.skipBack();
+    document.querySelector("#nav-music meting-js")?.aplayer?.skipBack();
   },
   musicSkipForward() {
-    document.querySelector("meting-js")?.aplayer?.skipForward();
+    document.querySelector("#nav-music meting-js")?.aplayer?.skipForward();
   },
   switchCommentBarrage() {
     const commentBarrageElement = document.querySelector(".comment-barrage");

@@ -1,7 +1,7 @@
 .rs_show
     if theme.rightside.hide.enable
         button.config(type='button' title=_p('rightside.show.gear') heotip=_p('rightside.show.gear') onclick='document.querySelector(".rs_hide").classList.toggle("show")')
-            i.fas.fa-gear.fa-spin
+            i.fas.fa-gear
     if showToc
         button.mobile.toc(type='button' title=_p('rightside.show.toc') heotip=_p('rightside.show.toc') onclick="document.querySelector('#card-toc').classList.toggle('open')")
             i.fas.fa-list
