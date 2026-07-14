@@ -108,9 +108,6 @@ search:
   load: Cargando...
   close: Cerrar búsqueda
   suggestions: Búsquedas populares
-  ai_title: Búsqueda con IA
-  ai_text: ¿No encuentras el artículo? Prueba la búsqueda con IA
-  ai_recommend: Recomendado
 
 head:
   noscript: Por favor habilita JavaScript para ver el sitio

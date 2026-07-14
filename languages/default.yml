@@ -111,9 +111,6 @@ search:
   load: 搜索中...
   close: 关闭搜索
   suggestions: 热门搜索
-  ai_title: AI 搜索
-  ai_text: 找不到想要的文章？试试AI搜索
-  ai_recommend: 推荐
 
 head:
   noscript: 开启JavaScript才能访问本站哦~

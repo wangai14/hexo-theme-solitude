@@ -108,9 +108,6 @@ search:
   load: Loading...
   close: Close search
   suggestions: Popular searches
-  ai_title: AI search
-  ai_text: Can't find the article? Try AI search
-  ai_recommend: Recommended
 
 head:
   noscript: Please enable JavaScript to view the site

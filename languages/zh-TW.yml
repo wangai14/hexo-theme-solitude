@@ -109,9 +109,6 @@ search:
   load: 加載中...
   close: 關閉搜尋
   suggestions: 熱門搜尋
-  ai_title: AI 搜尋
-  ai_text: 找不到想要的文章？試試AI搜尋
-  ai_recommend: 推薦
 
 head:
   noscript: 開啟JavaScript才能訪問本站哦~

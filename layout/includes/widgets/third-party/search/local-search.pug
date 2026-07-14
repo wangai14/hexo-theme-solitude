@@ -13,9 +13,4 @@
             ul#search-results(hidden)
             div#search-pagination
             div#search-tips
-            if theme.search.ai && theme.search.ai.enable && theme.search.ai.url
-                a#search-ai-tips(href=url_for(theme.search.ai.url) target="_blank" rel="external nofollow noopener noreferrer" title=__('search.ai_title'))
-                    i.solitude.fas.fa-brain(aria-hidden="true")
-                    span.search-ai-text=__('search.ai_text')
-                    span.search-ai-recommend=__('search.ai_recommend')
     div#search-mask
