@@ -425,7 +425,7 @@ right_menu:
   # 自定义列表
   custom_list:
     # - name: 随机文章
-    #   click: toRandomPost()
+    #   click: Solitude.randomPost()
     #   id: menu-randomPost
     #   class:
     #   icon: fas fa-tower-broadcast

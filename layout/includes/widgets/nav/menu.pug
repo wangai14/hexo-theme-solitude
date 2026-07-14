@@ -14,7 +14,9 @@ if menu
                         each childValue, childLabel in value
                             li
                                 - var array = childValue.split('||')
-                                a.site-page.child(href=url_for(trim(array[0])))
+                                - var childUrl = trim(array[0])
+                                - var isTravelling = childUrl === 'javascript:travelling()'
+                                a.site-page.child(href=isTravelling ? 'javascript:void(0);' : url_for(childUrl), data-solitude-action=isTravelling ? 'travelling' : null, data-solitude-prevent=isTravelling ? 'true' : null)
                                     if array[1]
                                         i.solitude(class=array[1])
                                     span= childLabel

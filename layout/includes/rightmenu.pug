@@ -53,15 +53,15 @@ div#rightMenu
     if custom_list.length > 0
         div.rightMenu-group.rightMenu-line.rightMenuOther
             each item,index in custom_list
-                div.rightMenu-item(id=item.id class=item.class onclick=item.click+'||rm.hideRightMenu()')
+                div.rightMenu-item(id=item.id class=item.class data-solitude-action="runConfiguredAction" data-solitude-value=item.click)
                     i.solitude(class=item.icon)
                     span= item.name
     div.rightMenu-group.rightMenu-line.rightMenuOther
         if theme.right_menu.commentBarrage && theme.comment.use && theme.comment.commentBarrage
-            div.rightMenu-item#menu-commentBarrage(onclick="sco.switchCommentBarrage()")
+            div.rightMenu-item#menu-commentBarrage(data-solitude-action="switchCommentBarrage")
                 i.solitude.fas.fa-comment
                 span.menu-commentBarrage-text= _p('right_menu.barrage.close')
-        div.rightMenu-item#menu-darkmode(onclick="sco.switchDarkMode()")
+        div.rightMenu-item#menu-darkmode(data-solitude-action="switchDarkMode")
             i.solitude.fas.fa-circle-half-stroke
             case theme.display_mode.type
                 when 'auto'

@@ -4,11 +4,11 @@
 
 .banner-button-group
     if theme.footer.randomlink
-        a.banner-button.secondary(onclick="travelling()")
+        a.banner-button.secondary(data-solitude-action="travelling")
             i.solitude.fas.fa-tower-broadcast
             span.banner-button-text=_p('link.banner.random')
     if theme.comment.use
-        a.banner-button(onclick="sco.scrollToComment()")
+        a.banner-button(data-solitude-action="scrollToComment")
             i.solitude.fas.fa-circle-chevron-right
             span.solitude.banner-button-text=_p('link.banner.toComment')
 

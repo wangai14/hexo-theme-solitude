@@ -1,5 +1,7 @@
+import { Solitude } from "./core/api.js";
+
 (() => {
-  const config = GLOBAL_CONFIG.friend_links;
+  const config = Solitude.config.friend_links;
   let request = null;
 
   const createElement = (tag, className, text) => {
@@ -16,7 +18,7 @@
     const url = String(value);
     if (/^(?:[a-z][a-z\d+.-]*:|\/\/|#)/i.test(url)) return url;
 
-    const root = GLOBAL_CONFIG.root || "/";
+    const root = Solitude.config.root || "/";
     if (url.startsWith("/")) {
       return root === "/" ? url : `${root.replace(/\/$/, "")}${url}`;
     }
@@ -29,7 +31,7 @@
     image.loading = "lazy";
     const resolvedSrc = resolveSiteUrl(src);
 
-    if (GLOBAL_CONFIG.lazyload.enable) {
+    if (Solitude.config.lazyload.enable) {
       image.src = config.placeholder || config.default_avatar;
       image.dataset.lazySrc = resolvedSrc;
     } else {
@@ -330,7 +332,7 @@
   };
 
   const refreshLazyload = () => {
-    if (!GLOBAL_CONFIG.lazyload.enable) return;
+    if (!Solitude.config.lazyload.enable) return;
     if (window.lazyLoadInstance) window.lazyLoadInstance.update();
   };
 
@@ -442,7 +444,7 @@
       const available = [...links];
       const count = Math.min(3, available.length);
       for (let index = 0; index < count; index += 1) {
-        const selectedIndex = utils.randomNum(available.length);
+        const selectedIndex = Solitude.randomNum(available.length);
         const selected = available.splice(selectedIndex, 1)[0];
         const anchor = createElement("a", "footer-item", selected.name);
         anchor.href = resolveSiteUrl(selected.link);
@@ -468,7 +470,7 @@
     if (banner) renderBanner(banner);
   };
 
-  window.travelling = async () => {
+  Solitude.travelling = async () => {
     try {
       const data = await load();
       const links = data.links.flatMap((group) =>
@@ -478,7 +480,7 @@
         }))
       );
       if (!links.length) throw new Error("No friend links available");
-      const link = links[utils.randomNum(links.length)];
+      const link = links[Solitude.randomNum(links.length)];
       Snackbar.show({
         text: config.random.replace(/\$\{name}/, link.name),
         duration: 8000,
@@ -495,6 +497,6 @@
     }
   };
 
-  window.randomLinksList = renderFooter;
-  window.friendLinks = { init, load };
+  Solitude.randomLinksList = renderFooter;
+  Solitude.friendLinks = { init, load };
 })();

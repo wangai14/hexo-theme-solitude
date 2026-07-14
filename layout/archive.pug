@@ -49,8 +49,7 @@ block content
                 nav#pagination(aria-label='归档分页')
                   .pagination
 
-            script#archive-page-data(type='application/json')!= archiveJson
-            script(defer src=url_for('/js/archive-page.js'))
+            template#archive-page-data!= archiveJson
 
           include includes/widgets/aside/aside
 

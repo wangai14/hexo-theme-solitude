@@ -1,9 +1,6 @@
-(() => {
-  if (window.archivePageController) {
-    window.archivePageController.init();
-    return;
-  }
+import { Solitude } from "./core/api.js";
 
+export const archivePageController = (() => {
   const createElement = (tag, className, text) => {
     const element = document.createElement(tag);
     if (className) element.className = className;
@@ -19,7 +16,7 @@
 
       let posts;
       try {
-        posts = JSON.parse(dataElement.textContent || '[]');
+        posts = JSON.parse(dataElement.content?.textContent || dataElement.textContent || '[]');
       } catch (error) {
         this.renderState(shell, '文章数据加载失败，请稍后再试。');
         console.error('Failed to parse archive data:', error);
@@ -176,11 +173,19 @@
       const list = shell.querySelector('#archives-page-list');
       if (!list) return;
       list.replaceChildren(createElement('div', 'archive-page-state', message));
+    },
+
+    destroy() {
+      this.shell = null;
+      this.list = null;
+      this.yearList = null;
+      this.pagination = null;
+      this.paginationSection = null;
+      this.posts = [];
     }
   };
 
-  window.archivePageController = controller;
-  document.addEventListener('DOMContentLoaded', () => controller.init());
-  document.addEventListener('pjax:complete', () => controller.init());
-  if (document.readyState !== 'loading') controller.init();
+  return controller;
 })();
+
+export const initArchivePage = () => archivePageController.init();

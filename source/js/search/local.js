@@ -1,3 +1,5 @@
+import { Solitude } from "../core/api.js";
+
 (() => {
 class LocalSearch {
     constructor() {
@@ -42,7 +44,7 @@ class LocalSearch {
         this.bindKeyboardShortcuts();
         this.bindPjaxEvents();
         this.syncSearchState();
-        window.openSearch = () => this.openSearch();
+        Solitude.openSearch = () => this.openSearch();
 
         try {
             await this.loadSearchData();
@@ -54,13 +56,13 @@ class LocalSearch {
     }
 
     async loadSearchData() {
-        if (!GLOBAL_CONFIG?.localsearch?.path) {
+        if (!Solitude.config?.localsearch?.path) {
             throw new Error('Search data path not configured');
         }
 
         this.isLoading = true;
         try {
-            const response = await fetch(GLOBAL_CONFIG.localsearch.path);
+            const response = await fetch(Solitude.config.localsearch.path);
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
@@ -119,13 +121,13 @@ class LocalSearch {
             });
         });
 
-        if (GLOBAL_CONFIG.right_menu && this.elements.menuSearch) {
+        if (Solitude.config.right_menu && this.elements.menuSearch) {
             this.bindOnce(this.elements.menuSearch, 'click', () => {
-                window.rm?.hideRightMenu();
+                Solitude.hideRightMenu?.();
                 this.openSearch();
-                if (window.selectTextNow && this.elements.searchInput) {
-                    this.elements.searchInput.value = window.selectTextNow;
-                    this.handleSearchInput(window.selectTextNow.trim());
+                if (Solitude.selectedText && this.elements.searchInput) {
+                    this.elements.searchInput.value = Solitude.selectedText;
+                    this.handleSearchInput(Solitude.selectedText.trim());
                 }
             });
         }
@@ -164,7 +166,7 @@ class LocalSearch {
     openSearch() {
         if (!this.elements.searchMask || !this.elements.searchDialog) return;
 
-        utils.animateIn(this.elements.searchMask, 'to_show 0.5s');
+        Solitude.animateIn(this.elements.searchMask, 'to_show 0.5s');
         this.elements.searchDialog.style.display = 'flex';
         document.documentElement.classList.add('search-open');
         this.syncSearchState();
@@ -177,8 +179,8 @@ class LocalSearch {
     closeSearch() {
         if (!this.elements.searchMask || !this.elements.searchDialog) return;
 
-        utils.animateOut(this.elements.searchDialog, 'search_close .5s');
-        utils.animateOut(this.elements.searchMask, 'to_hide 0.5s');
+        Solitude.animateOut(this.elements.searchDialog, 'search_close .5s');
+        Solitude.animateOut(this.elements.searchMask, 'to_hide 0.5s');
         document.documentElement.classList.remove('search-open');
         window.removeEventListener('resize', this.fixSafariHeight);
     }
@@ -222,7 +224,7 @@ class LocalSearch {
         this.setQueryState(true);
 
         if (this.isLoading) {
-            this.showStatusMessage(GLOBAL_CONFIG.lang?.search?.loading || 'Searching...', 'search-result-loading');
+            this.showStatusMessage(Solitude.config.lang?.search?.loading || 'Searching...', 'search-result-loading');
             return;
         }
 
@@ -365,7 +367,7 @@ class LocalSearch {
     showEmptyMessage() {
         const empty = document.createElement('span');
         empty.className = 'search-result-empty';
-        empty.textContent = GLOBAL_CONFIG.lang?.search?.empty?.replace(/\$\{query}/g, this.currentQuery) ||
+        empty.textContent = Solitude.config.lang?.search?.empty?.replace(/\$\{query}/g, this.currentQuery) ||
             `没有找到与 "${this.currentQuery}" 相关的内容`;
         this.elements.searchResults.appendChild(empty);
     }
@@ -373,7 +375,7 @@ class LocalSearch {
     showResultCount(count, time) {
         const countElement = document.createElement('span');
         countElement.className = 'search-result-count';
-        const template = GLOBAL_CONFIG.lang?.search?.hit || 'Found ${hits} results in ${time} ms';
+        const template = Solitude.config.lang?.search?.hit || 'Found ${hits} results in ${time} ms';
         countElement.innerHTML = template
             .replace(/\$\{hits}/g, count)
             .replace(/\$\{query}/g, count)
@@ -418,7 +420,7 @@ class LocalSearch {
 }
 
 const initializeLocalSearch = () => {
-    if (!window.localSearch) window.localSearch = new LocalSearch();
+    if (!Solitude.localSearch) Solitude.localSearch = new LocalSearch();
 };
 
 if (document.readyState === 'loading') {

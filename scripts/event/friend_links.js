@@ -21,7 +21,7 @@ const getFriendLinksMeta = (hexo) => {
 
 hexo.extend.generator.register("friend-links-data", function () {
   const meta = getFriendLinksMeta(this);
-  if (!meta.async || !meta.linksData) return;
+  if (!meta.linksData || meta.total === 0) return;
 
   return {
     path: "links.json",

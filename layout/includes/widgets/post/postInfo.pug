@@ -63,7 +63,7 @@
                                 span#busuanzi_page_pv
                                     i.solitude.fas.fa-spinner.fa-spin
             if theme.post.meta.comment && page.comment && theme.comment.count && theme.comment.use
-                span.post-meta-commentcount(title=_p('post.comment'), onclick="sco.scrollTo('post-comment')")
+                span.post-meta-commentcount(title=_p('post.comment') data-solitude-action="scrollTo" data-solitude-target="post-comment")
                     i.solitude.fas.fa-comment
                     a(href=url_for(page.path) + "#post-comment")
                         case theme.comment.use[0]

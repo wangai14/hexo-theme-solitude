@@ -1,28 +1,28 @@
 -
     if (theme.search.enable) {
-        var localSearch = 'undefined';
-        var algolia = 'undefined';
+        var localSearch = null;
+        var algolia = null;
         switch (theme.search.type) {
             case 'local':
-                localSearch = JSON.stringify({
+                localSearch = {
                     preload: theme.search.local.preload,
                     path: theme?.search?.local?.CDN || '/search.xml'
-                });
+                };
                 break;
             case 'algolia':
-                algolia = JSON.stringify({
+                algolia = {
                     appId: config.algolia.appId || config.algolia.applicationID,
                     apiKey: config.algolia.apiKey,
                     indexName: config.algolia.indexName,
                     hits: {
                         per_page: theme?.search?.algolia?.hits?.per_page || 10
                     }
-                });
+                };
                 break;
         }
     }
 
-    const witty_words = theme.aside?.my_card?.witty_words?.map(item => `"${item}"`) || [];
+    const witty_words = theme.aside?.my_card?.witty_words || [];
     const [hello_prefix, hello_back] = [_p('aside.hello'), _p('aside.back')];
 
     let comment = false
@@ -36,13 +36,13 @@
 
     let copyright = false;
     if (theme.copy.enable && theme.copy.copyright.enable) {
-        copyright = JSON.stringify({
+        copyright = {
             limit: theme.copy.copyright.limit,
             author: _p("copy_copyright.author") + ': ' + config.author,
             link: _p("copy_copyright.link") + ': ',
             source: _p("copy_copyright.source") + ': ' + config.title,
             info: _p("copy_copyright.info")
-        })
+        }
     }
 
     let lang = false
@@ -172,42 +172,57 @@
         scroll_right: _p('link.scroll_right')
     }
 
-script.
-    const GLOBAL_CONFIG = {
-        root: '!{config.root}',
-        algolia: !{algolia ? algolia : 'undefined'},
-        localsearch: !{localSearch ? localSearch : 'undefined'},
-        runtime: '!{theme.aside.siteinfo.runtimeenable ? theme.aside.siteinfo.runtime : false}',
+-
+    const globalConfig = {
+        root: config.root,
+        algolia,
+        localsearch: localSearch,
+        runtime: theme.aside.siteinfo.runtimeenable ? theme.aside.siteinfo.runtime : false,
         lazyload: {
-            enable: !{theme.lazyload.enable},
-            error: '!{theme.lazyload.errorimg}'
+            enable: theme.lazyload.enable,
+            error: theme.lazyload.errorimg
         },
-        copyright: !{copyright},
-        highlight: !{highlight ? JSON.stringify(highlight) : false},
-        friend_links: !{JSON.stringify(friendLinks)},
-        randomlink: !{theme.footer.randomlink},
-        lang: !{JSON.stringify(lang)},
+        copyright,
+        highlight,
+        friend_links: friendLinks,
+        random_posts: site.posts.filter(post => post.random !== false).map(post => post.path),
+        randomlink: theme.footer.randomlink,
+        feature_modules: {
+            search: theme.search.enable ? theme.search.type : false,
+            post_ai: theme.post.ai.enable,
+            friend_links: friendLinks.total > 0,
+            music: theme.capsule.enable || theme.music.enable || (theme.brevity.enable && theme.brevity.music),
+            right_menu: theme.right_menu.enable,
+            translate: theme.translate.enable,
+            covercolor: theme.post.covercolor.enable ? theme.post.covercolor.mode : false
+        },
+        lang,
         aside: {
             state: {
-                morning: "!{theme.aside.my_card.state.morning}",
-                noon: "!{theme.aside.my_card.state.noon}",
-                afternoon: "!{theme.aside.my_card.state.afternoon}",
-                night: "!{theme.aside.my_card.state.night}",
-                goodnight: "!{theme.aside.my_card.state.goodnight}",
+                morning: theme.aside.my_card.state.morning,
+                noon: theme.aside.my_card.state.noon,
+                afternoon: theme.aside.my_card.state.afternoon,
+                night: theme.aside.my_card.state.night,
+                goodnight: theme.aside.my_card.state.goodnight
             },
-            witty_words: [!{witty_words}],
+            witty_words,
             witty_comment: {
-                prefix: '!{hello_prefix}',
-                back: '!{hello_back}',
-            },
+                prefix: hello_prefix,
+                back: hello_back
+            }
         },
         covercolor: {
-            enable: !{theme.post.covercolor.enable}
+            enable: theme.post.covercolor.enable,
+            mode: theme.post.covercolor.mode,
+            api: theme.post.covercolor.api,
+            time: theme.post.covercolor.time
         },
-        comment: !{comment ? JSON.stringify(comment) : false},
-        lightbox: '!{ theme.mediumZoom ? "mediumZoom" : (theme.fancybox ? "fancybox" : "null")}',
-        right_menu: !{rightMenu ? JSON.stringify(rightMenu) : false},
-        translate: !{translate ? JSON.stringify(translate) : false},
-        lure: !{lure ? JSON.stringify(lure) : false},
-        expire: !{expire ? JSON.stringify(expire) : false},
+        comment,
+        lightbox: theme.mediumZoom ? "mediumZoom" : (theme.fancybox ? "fancybox" : null),
+        right_menu: rightMenu,
+        translate,
+        lure,
+        expire
     };
+
+template#site-config!= JSON.stringify(globalConfig).replace(/</g, '\\u003c')

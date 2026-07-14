@@ -20,7 +20,7 @@ mixin siteName()
         span.title= theme.site.name.custom
     +icon('fas fa-home')
 
-nav#nav.show(onclick="sco.onNavBlankClickCloseConsole(event)")
+nav#nav.show(data-solitude-action="onNavBlankClickCloseConsole" data-solitude-event="true")
     #nav-group
         #blog_name
             //- 分组导航按钮
@@ -35,7 +35,7 @@ nav#nav.show(onclick="sco.onNavBlankClickCloseConsole(event)")
         //- 页面名称遮罩
         #page-name-mask
             #page-name
-                a#page-name-text(onclick="sco.toTop()" title=_p('nav.backtop') heotip=_p('nav.backtop'))= title || config.title
+                a#page-name-text(data-solitude-action="toTop" title=_p('nav.backtop') heotip=_p('nav.backtop'))= title || config.title
         
         //- 主菜单
         #menus

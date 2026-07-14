@@ -1,9 +1,11 @@
-document.addEventListener('DOMContentLoaded', function () {
-    const { defaultEncoding, translateDelay } = GLOBAL_CONFIG.translate;
+import { Solitude } from "./core/api.js";
+
+const initializeTranslation = () => {
+    const { defaultEncoding, translateDelay } = Solitude.config.translate;
     const targetEncodingCookie = 'translate-chn-cht';
 
     let currentEncoding = defaultEncoding;
-    let targetEncoding = Number(utils.saveToLocal.get(targetEncodingCookie)) || defaultEncoding;
+    let targetEncoding = Number(Solitude.saveToLocal.get(targetEncodingCookie)) || defaultEncoding;
 
     function setLang() {
         document.documentElement.lang = targetEncoding === 1 ? 'zh-TW' : 'zh-CN';
@@ -39,11 +41,11 @@ document.addEventListener('DOMContentLoaded', function () {
         targetEncoding = targetEncoding === 1 ? 2 : 1;
         button.lastChild.textContent = targetEncoding === 1 ? simplified : traditional;
 
-        utils.snackbarShow(targetEncoding === 1 ? '你已切換為繁體' : '你已切换为简体');
-        utils.saveToLocal.set(targetEncodingCookie, targetEncoding, 2);
+        Solitude.snackbarShow(targetEncoding === 1 ? '你已切換為繁體' : '你已切换为简体');
+        Solitude.saveToLocal.set(targetEncodingCookie, targetEncoding, 2);
         setLang();
         translateBody();
-        rm.hideRightMenu();
+        Solitude.hideRightMenu?.();
     }
 
     function JTPYStr() {
@@ -96,4 +98,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     translateInitialization();
     document.addEventListener('pjax:complete', translateInitialization);
-});
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeTranslation, { once: true });
+} else {
+    initializeTranslation();
+}

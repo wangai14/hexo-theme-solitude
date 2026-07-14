@@ -1,3 +1,39 @@
+import { Solitude } from "./core/api.js";
+import { initActionDelegation } from "./core/actions.js";
+import { lifecycle } from "./core/lifecycle.js";
+import { initPreloader } from "./core/preloader.js";
+
+let ai = null;
+let coverColor = () => {};
+let initializeMusicPlayer = () => {};
+
+const loadFeatureModules = async () => {
+  const features = Solitude.config.feature_modules || {};
+  const requests = [];
+
+  if (features.search === "local") requests.push(import("./search/local.js"));
+  if (features.search === "algolia") requests.push(import("./search/algolia.js"));
+  if (features.friend_links) requests.push(import("./friend_links.js"));
+  if (features.right_menu) requests.push(import("./right_menu.js"));
+  if (features.translate) requests.push(import("./tw_cn.js"));
+  if (features.post_ai && Solitude.page.is_post) {
+    requests.push(import("./post_ai.js").then((module) => { ai = module.default; }));
+  }
+  if (features.music) {
+    requests.push(import("./music.js").then((module) => {
+      initializeMusicPlayer = module.initializeMusicPlayer;
+    }));
+  }
+  if (features.covercolor) {
+    requests.push(import(`./covercolor/${features.covercolor}.js`).then((module) => {
+      coverColor = module.coverColor;
+      Solitude.coverColor = coverColor;
+    }));
+  }
+
+  await Promise.all(requests);
+};
+
 const sidebarFn = () => {
   const $toggleMenu = document.getElementById("toggle-menu");
   const $mobileSidebarMenus = document.getElementById("sidebar-menus");
@@ -6,7 +42,7 @@ const sidebarFn = () => {
 
   const toggleMobileSidebar = (isOpen) => {
     $body.style.overflow = isOpen ? "hidden" : "";
-    utils[isOpen ? "fadeIn" : "fadeOut"]($menuMask, 0.5);
+    Solitude[isOpen ? "fadeIn" : "fadeOut"]($menuMask, 0.5);
     $mobileSidebarMenus.classList.toggle("open", isOpen);
   };
 
@@ -16,18 +52,25 @@ const sidebarFn = () => {
     }
   };
 
-  $toggleMenu.addEventListener("click", () => toggleMobileSidebar(true));
-  $menuMask.addEventListener("click", closeMobileSidebar);
+  if (!$toggleMenu || !$mobileSidebarMenus || !$menuMask) return;
 
-  window.addEventListener("resize", () => {
-    if (
-      utils.isHidden($toggleMenu) &&
-      $mobileSidebarMenus.classList.contains("open")
-    ) {
-      closeMobileSidebar();
-    }
-    sco.refreshWaterFall();
+  lifecycle.listen($toggleMenu, "click", () => toggleMobileSidebar(true));
+  lifecycle.listen($menuMask, "click", closeMobileSidebar);
+
+  let resizeFrame;
+  lifecycle.listen(window, "resize", () => {
+    if (resizeFrame) return;
+    resizeFrame = requestAnimationFrame(() => {
+      resizeFrame = null;
+      if (
+        Solitude.isHidden($toggleMenu) &&
+        $mobileSidebarMenus.classList.contains("open")
+      ) {
+        closeMobileSidebar();
+      }
+    });
   });
+  lifecycle.add(() => cancelAnimationFrame(resizeFrame));
 };
 
 const scrollFn = () => {
@@ -80,11 +123,7 @@ const scrollFn = () => {
     }
   };
 
-  if (window.navScrollHandler) {
-    window.removeEventListener("scroll", window.navScrollHandler);
-  }
-  window.navScrollHandler = onScroll;
-  window.addEventListener("scroll", window.navScrollHandler, { passive: true });
+  lifecycle.listen(window, "scroll", onScroll, { passive: true });
   updateHeaderAndRightside(false, initTop);
 };
 
@@ -101,23 +140,24 @@ const percent = () => {
       body.clientHeight,
       docEl.clientHeight
     ) - docEl.clientHeight;
-  const scrolledPercent = Math.round((scrollPos / totalScrollableHeight) * 100);
+  const scrolledPercent = totalScrollableHeight > 0
+    ? Math.round((scrollPos / totalScrollableHeight) * 100)
+    : 0;
   const navToTop = document.querySelector("#nav-totop");
   const rsToTop = document.querySelector(".rs_show .top i");
   const percentDisplay = document.querySelector("#percent");
-  const isNearEnd =
-    window.scrollY + docEl.clientHeight >=
-    (
-      document.getElementById("post-comment") ||
-      document.getElementById("footer")
-    ).offsetTop;
+  const endTarget =
+    document.getElementById("post-comment") || document.getElementById("footer");
+  const isNearEnd = endTarget
+    ? window.scrollY + docEl.clientHeight >= endTarget.offsetTop
+    : false;
 
   navToTop?.classList.toggle("long", isNearEnd || scrolledPercent > 90);
   rsToTop?.classList.toggle("show", isNearEnd || scrolledPercent > 90);
-  percentDisplay.textContent =
+  if (percentDisplay) percentDisplay.textContent =
     isNearEnd || scrolledPercent > 90
       ? navToTop
-        ? GLOBAL_CONFIG.lang.backtop
+        ? Solitude.config.lang.backtop
         : ""
       : scrolledPercent;
 
@@ -131,7 +171,7 @@ const percent = () => {
 const showTodayCard = () => {
   const el = document.getElementById("todayCard");
   const topGroup = document.querySelector(".topGroup");
-  topGroup?.addEventListener("mouseleave", () => el?.classList.remove("hide"));
+  lifecycle.listen(topGroup, "mouseleave", () => el?.classList.remove("hide"));
 };
 
 const initHomeCenter = () => {
@@ -268,8 +308,8 @@ const initHomeCenter = () => {
     if (!link) return;
     if (event?.metaKey || event?.ctrlKey) {
       window.open(link, "_blank");
-    } else if (typeof pjax === "object" && pjax.loadUrl) {
-      pjax.loadUrl(link);
+    } else if (Solitude.pjax?.loadUrl) {
+      Solitude.navigate(link);
     } else {
       window.location.href = link;
     }
@@ -428,7 +468,7 @@ const initObserver = () => {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         paginationElement.classList.toggle("show-window", entry.isIntersecting);
-        if (GLOBAL_CONFIG.comment.commentBarrage) {
+        if (Solitude.config.comment?.commentBarrage && commentBarrageElement) {
           commentBarrageElement.style.bottom = entry.isIntersecting
             ? "-200px"
             : "0px";
@@ -436,12 +476,13 @@ const initObserver = () => {
       });
     });
     observer.observe(commentElement);
+    lifecycle.add(() => observer.disconnect());
   }
 };
 
 const addCopyright = () => {
-  if (!GLOBAL_CONFIG.copyright) return;
-  const { limit, author, link, source, info } = GLOBAL_CONFIG.copyright;
+  if (!Solitude.config.copyright) return;
+  const { limit, author, link, source, info } = Solitude.config.copyright;
 
   document.body.addEventListener("copy", (e) => {
     e.preventDefault();
@@ -455,7 +496,7 @@ const addCopyright = () => {
 };
 
 const asideStatus = () => {
-  const status = utils.saveToLocal.get("aside-status");
+  const status = Solitude.saveToLocal.get("aside-status");
   document.documentElement.classList.toggle("hide-aside", status === "hide");
 };
 
@@ -464,13 +505,15 @@ function initThemeColor() {
   const themeColor =
     currentTop > 0
       ? "--efu-card-bg"
-      : PAGE_CONFIG.is_post
+      : Solitude.page.is_post
       ? "--efu-main"
       : "--efu-background";
   applyThemeColor(
     getComputedStyle(document.documentElement).getPropertyValue(themeColor)
   );
 }
+
+Solitude.initThemeColor = initThemeColor;
 
 function applyThemeColor(color) {
   const themeColorMeta = document.querySelector('meta[name="theme-color"]');
@@ -487,13 +530,64 @@ function applyThemeColor(color) {
 const handleThemeChange = (mode) => {
   const themeChange = window.globalFn?.themeChange || {};
   Object.values(themeChange).forEach((fn) => fn(mode));
+  lifecycle.emit("themeChange", { mode });
 };
 
-const sco = {
+const actions = {
   lastWittyWord: "",
   wasPageHidden: false,
   musicPlaying: false,
   consoleNavState: null,
+  randomPost() {
+    const posts = Solitude.config.random_posts || [];
+    if (!posts.length) return;
+    Solitude.navigate(`${Solitude.config.root}${posts[Solitude.randomNum(posts.length)]}`);
+  },
+  noop() {},
+  navigateTo(url) {
+    Solitude.navigate(url);
+  },
+  openExternal(url) {
+    if (url) window.open(url, "_blank", "noopener");
+  },
+  toggleTargetClass(target, event, element) {
+    const selector = target || element?.dataset.solitudeTarget;
+    const className = element?.dataset.solitudeClass || "show";
+    document.querySelector(selector)?.classList.toggle(className);
+  },
+  setTargetClass(target, event, element) {
+    const selector = target || element?.dataset.solitudeTarget;
+    const className = element?.dataset.solitudeClass || "show";
+    const enabled = element?.dataset.solitudeEnabled !== "false";
+    document
+      .querySelectorAll(selector)
+      .forEach((item) => item.classList.toggle(className, enabled));
+  },
+  showReward() {
+    document
+      .querySelectorAll(".reward-main")
+      .forEach((item) => { item.style.display = "flex"; });
+    const quitBox = document.getElementById("quit-box");
+    if (quitBox) quitBox.style.display = "flex";
+  },
+  hideReward() {
+    document
+      .querySelectorAll(".reward-main")
+      .forEach((item) => { item.style.display = "none"; });
+    const quitBox = document.getElementById("quit-box");
+    if (quitBox) quitBox.style.display = "none";
+  },
+  runConfiguredAction(command) {
+    const source = String(command || "").trim().replace(/;$/, "");
+    const call = source.match(/^(?:Solitude\.)?([A-Za-z_$][\w$]*)\(\)$/);
+    if (call && typeof Solitude[call[1]] === "function") {
+      Solitude[call[1]]();
+    } else {
+      const navigation = source.match(/^(?:pjax\.loadUrl|Solitude\.navigate)\((['"])(.*?)\1\)$/);
+      if (navigation) Solitude.navigate(navigation[2]);
+    }
+    Solitude.hideRightMenu?.();
+  },
   scrollTo(elementId) {
     const targetElement = document.getElementById(elementId);
     if (targetElement) {
@@ -511,16 +605,13 @@ const sco = {
     $music?.classList.toggle("stretch", this.musicPlaying);
     $console?.classList.toggle("on", this.musicPlaying);
 
-    if (
-      typeof rm !== "undefined" &&
-      rm?.menuItems?.music?.[0]
-    ) {
+    if (Solitude.rightMenu?.menuItems?.music?.[0]) {
       const $rmText = document.querySelector("#menu-music-toggle span");
       const $rmIcon = document.querySelector("#menu-music-toggle i");
       if ($rmText) {
         $rmText.textContent = this.musicPlaying
-          ? GLOBAL_CONFIG.right_menu.music.stop
-          : GLOBAL_CONFIG.right_menu.music.start;
+          ? Solitude.config.right_menu.music.stop
+          : Solitude.config.right_menu.music.start;
       }
       if ($rmIcon) {
         $rmIcon.className = `solitude fas ${this.musicPlaying ? "fa-pause" : "fa-play"}`;
@@ -583,14 +674,16 @@ const sco = {
       window.getComputedStyle(commentBarrageElement).display === "flex";
     commentBarrageElement.style.display = isDisplayed ? "none" : "flex";
     consoleCommentBarrage?.classList.toggle("on", !isDisplayed);
-    utils.saveToLocal.set("commentBarrageSwitch", !isDisplayed, 0.2);
-    rm?.menuItems.barrage && rm.barrage(isDisplayed);
+    Solitude.saveToLocal.set("commentBarrageSwitch", !isDisplayed, 0.2);
+    if (Solitude.rightMenu?.menuItems.barrage) {
+      Solitude.rightMenu.barrage(isDisplayed);
+    }
   },
   switchHideAside() {
     const htmlClassList = document.documentElement.classList;
     const consoleHideAside = document.querySelector("#consoleHideAside");
     const isHideAside = htmlClassList.contains("hide-aside");
-    utils.saveToLocal.set("aside-status", isHideAside ? "show" : "hide", 1);
+    Solitude.saveToLocal.set("aside-status", isHideAside ? "show" : "hide", 1);
     htmlClassList.toggle("hide-aside");
     consoleHideAside.classList.toggle("on", !isHideAside);
   },
@@ -612,7 +705,7 @@ const sco = {
     );
   },
   changeWittyWord() {
-    const greetings = GLOBAL_CONFIG.aside.witty_words || [];
+    const greetings = Solitude.config.aside.witty_words || [];
     if (greetings.length === 0) {
       document.getElementById("sayhi").textContent = "Solitude";
       this.lastWittyWord = null;
@@ -635,14 +728,17 @@ const sco = {
       document.documentElement.getAttribute("data-theme") === "dark";
     const newMode = isDarkMode ? "light" : "dark";
     document.documentElement.setAttribute("data-theme", newMode);
-    utils.saveToLocal.set("theme", newMode, 0.02);
-    utils.snackbarShow(GLOBAL_CONFIG.lang.theme[newMode], false, 2000);
-    if (typeof rm === "object") rm.mode(!isDarkMode) && rm.hideRightMenu();
+    Solitude.saveToLocal.set("theme", newMode, 0.02);
+    Solitude.snackbarShow(Solitude.config.lang.theme[newMode], false, 2000);
+    if (Solitude.rightMenu) {
+      Solitude.rightMenu.mode(!isDarkMode);
+      Solitude.rightMenu.hideRightMenu();
+    }
     handleThemeChange(newMode);
   },
   hideTodayCard: () =>
     document.getElementById("todayCard").classList.add("hide"),
-  toTop: () => utils.scrollToDest(0),
+  toTop: () => Solitude.scrollToDest(0),
   showConsole() {
     const consoleElement = document.getElementById("console");
     if (!consoleElement || consoleElement.classList.contains("show")) return;
@@ -704,27 +800,43 @@ const sco = {
     this.hideConsole();
   },
   refreshWaterFall() {
+    const allElements = [...document.querySelectorAll(".waterfall")];
+    const elements = allElements.filter(
+      (element) => element.dataset.solitudeWaterfall !== "true"
+    );
+    if (!elements.length) return;
+    elements.forEach((element) => {
+      element.dataset.solitudeWaterfall = "true";
+    });
+
+    const timers = new Set();
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          setTimeout(() => {
+          observer.unobserve(entry.target);
+          const timer = setTimeout(() => {
+            timers.delete(timer);
+            if (!entry.target.isConnected) return;
             waterfall(entry.target).then(() => {
-              entry.target.classList.add("show");
+              if (entry.target.isConnected) entry.target.classList.add("show");
             });
           }, 300);
+          timers.add(timer);
         }
       });
     });
-    document
-      .querySelectorAll(".waterfall")
-      .forEach((el) => observer.observe(el));
+    elements.forEach((element) => observer.observe(element));
+    lifecycle.add(() => {
+      observer.disconnect();
+      timers.forEach(clearTimeout);
+    });
   },
   addRuntime() {
     const el = document.getElementById("runtimeshow");
-    if (el && GLOBAL_CONFIG.runtime) {
+    if (el && Solitude.config.runtime) {
       el.innerText =
-        utils.timeDiff(new Date(GLOBAL_CONFIG.runtime), new Date()) +
-        GLOBAL_CONFIG.lang.day;
+        Solitude.timeDiff(new Date(Solitude.config.runtime), new Date()) +
+        Solitude.config.lang.day;
     }
   },
   toTalk(txt) {
@@ -741,15 +853,15 @@ const sco = {
           new Event("input", { bubble: true, cancelable: true })
         );
         el.value = "> " + txt.replace(/\n/g, "\n> ") + "\n\n";
-        utils.scrollToDest(
-          utils.getEleTop(document.getElementById("post-comment")),
+        Solitude.scrollToDest(
+          Solitude.getEleTop(document.getElementById("post-comment")),
           300
         );
         el.focus();
         el.setSelectionRange(-1, -1);
       }
     });
-    utils.snackbarShow(GLOBAL_CONFIG.lang.totalk, false, 2000);
+    Solitude.snackbarShow(Solitude.config.lang.totalk, false, 2000);
   },
   initbbtalk() {
     const bberTalkElement = document.querySelector("#bber-talk");
@@ -772,7 +884,7 @@ const sco = {
         if (captionText) {
           image.insertAdjacentHTML(
             "afterend",
-            `<div class="img-alt is-center">${utils.escapeHtml(
+            `<div class="img-alt is-center">${Solitude.escapeHtml(
               captionText
             )}</div>`
           );
@@ -780,15 +892,15 @@ const sco = {
       });
   },
   scrollToComment: () =>
-    utils.scrollToDest(
-      utils.getEleTop(document.getElementById("post-comment")),
+    Solitude.scrollToDest(
+      Solitude.getEleTop(document.getElementById("post-comment")),
       300
     ),
   setTimeState() {
     const el = document.getElementById("sayhi");
     if (el) {
       const hours = new Date().getHours();
-      const lang = GLOBAL_CONFIG.aside.state;
+      const lang = Solitude.config.aside.state;
 
       const localData = getLocalData([
         "twikoo",
@@ -802,7 +914,11 @@ const sco = {
         for (let key of keys) {
           const data = localStorage.getItem(key);
           if (data) {
-            return JSON.parse(data);
+            try {
+              return JSON.parse(data);
+            } catch (error) {
+              localStorage.removeItem(key);
+            }
           }
         }
         return null;
@@ -810,8 +926,8 @@ const sco = {
       const nick = localData ? localData.nick || localData.display_name : null;
 
       const prefix = this.wasPageHidden
-        ? GLOBAL_CONFIG.aside.witty_comment.back + nick
-        : GLOBAL_CONFIG.aside.witty_comment.prefix + nick;
+        ? Solitude.config.aside.witty_comment.back + nick
+        : Solitude.config.aside.witty_comment.prefix + nick;
 
       const greetings = [
         { start: 0, end: 5, text: nick ? prefix : lang.goodnight },
@@ -843,7 +959,7 @@ const sco = {
   categoriesBarActive() {
     const categoryBar = document.querySelector("#category-bar");
     const currentPath = decodeURIComponent(window.location.pathname);
-    const isHomePage = currentPath === GLOBAL_CONFIG.root;
+    const isHomePage = currentPath === Solitude.config.root;
     if (categoryBar) {
       const categoryItems = categoryBar.querySelectorAll(".category-bar-item");
       categoryItems.forEach((item) => item.classList.remove("select"));
@@ -869,14 +985,19 @@ const sco = {
           behavior: "smooth",
         });
       };
-      scrollBar.addEventListener("scroll", () => {
-        clearTimeout(this.timeoutId);
-        this.timeoutId = setTimeout(() => {
-          nextElement.style.transform = isScrollBarAtEnd()
-            ? "rotate(180deg)"
-            : "";
-        }, 150);
-      });
+      if (scrollBar.dataset.solitudeScrollBound !== "true") {
+        scrollBar.dataset.solitudeScrollBound = "true";
+        lifecycle.listen(scrollBar, "scroll", () => {
+          clearTimeout(this.timeoutId);
+          this.timeoutId = setTimeout(() => {
+            if (nextElement) {
+              nextElement.style.transform = isScrollBarAtEnd()
+                ? "rotate(180deg)"
+                : "";
+            }
+          }, 150);
+        }, { passive: true });
+      }
       scroll();
     }
   },
@@ -892,18 +1013,20 @@ const sco = {
     if (!pageText) return;
     const pageButton = document.getElementById("toPageButton");
     const pageNumbers = document.querySelectorAll(".page-number");
-    const lastPageNumber = +pageNumbers[pageNumbers.length - 1].textContent;
-    if (!pageText || lastPageNumber === 1) {
-      toGroup.style.display = "none";
+    const lastPageNumber = +(pageNumbers[pageNumbers.length - 1]?.textContent || 1);
+    if (lastPageNumber === 1) {
+      if (toGroup) toGroup.style.display = "none";
       return;
     }
-    pageText.addEventListener("keydown", (event) => {
+    lifecycle.listen(pageText, "keydown", (event) => {
       if (event.key === "Enter") {
-        sco.toPage();
-        pjax.loadUrl(pageButton.href);
+        Solitude.toPage();
+        Solitude.navigate(pageButton.href);
       }
     });
-    pageText.addEventListener("input", () => {
+    lifecycle.listen(pageText, "input", () => {
+      pageText.value = pageText.value.replace(/[^0-9]/g, "");
+      if (pageText.value === "0") pageText.value = "";
       pageButton.classList.toggle(
         "haveValue",
         pageText.value !== "" && pageText.value !== "0"
@@ -970,13 +1093,13 @@ const sco = {
       owoBig.style.left = `${itemRect.left - owoBig.offsetWidth / 4}px`;
       owoBig.style.top = `${itemRect.top}px`;
     };
-    document.addEventListener("mouseover", showOwoBig);
-    document.addEventListener("mouseout", hideOwoBig);
+    lifecycle.listen(document, "mouseover", showOwoBig);
+    lifecycle.listen(document, "mouseout", hideOwoBig);
   },
   changeTimeFormat(selector) {
     selector.forEach((item) => {
       const timeVal = item.getAttribute("datetime");
-      item.textContent = utils.diffDate(timeVal, true);
+      item.textContent = Solitude.diffDate(timeVal, true);
       item.style.display = "inline";
     });
   },
@@ -992,7 +1115,7 @@ const sco = {
         loadTwoComment();
       }
     };
-    utils.addEventListenerPjax(switchBtn, "click", handleSwitchBtn);
+    Solitude.addEventListenerPjax(switchBtn, "click", handleSwitchBtn);
   },
   homeTypeit() {
     if (typeof home_subtitle === "undefined") return;
@@ -1006,11 +1129,15 @@ const sco = {
       ty.type(item).pause(500).delete(item);
     });
     ty.go();
+    lifecycle.add(() => ty.destroy?.());
   },
 };
 
+Object.assign(Solitude, actions);
+Solitude.toggleTheme = () => Solitude.switchDarkMode();
+
 const addHighlight = () => {
-  const highlight = GLOBAL_CONFIG.highlight;
+  const highlight = Solitude.config.highlight;
   if (!highlight) return;
   const { copy, expand, limit, syntax } = highlight;
   const $isPrismjs = syntax === "prismjs";
@@ -1031,7 +1158,7 @@ const addHighlight = () => {
     ? `<i class="solitude fas fa-angles-down"></i>`
     : "<i></i>";
 
-  const alertInfo = (ele, text) => utils.snackbarShow(text, false, 2000);
+  const alertInfo = (ele, text) => Solitude.snackbarShow(text, false, 2000);
 
   const copyFn = (e) => {
     const $buttonParent = e.parentNode;
@@ -1045,7 +1172,7 @@ const addHighlight = () => {
     selection.removeAllRanges();
     selection.addRange(range);
     document.execCommand("copy");
-    alertInfo(e.lastChild, GLOBAL_CONFIG.lang.copy.success);
+    alertInfo(e.lastChild, Solitude.config.lang.copy.success);
     selection.removeAllRanges();
     $buttonParent.classList.remove("copy-true");
   };
@@ -1073,14 +1200,14 @@ const addHighlight = () => {
       const hlTools = document.createElement("div");
       hlTools.className = `highlight-tools ${expandClass}`;
       hlTools.innerHTML = expandEle + lang + caption + copyEle;
-      utils.addEventListenerPjax(hlTools, "click", ToolsFn);
+      Solitude.addEventListenerPjax(hlTools, "click", ToolsFn);
       fragment.appendChild(hlTools);
     }
     if (limit && item.offsetHeight > limit + 30) {
       const ele = document.createElement("div");
       ele.className = "code-expand-btn";
       ele.innerHTML = limitEle;
-      utils.addEventListenerPjax(ele, "click", shrinkEle);
+      Solitude.addEventListenerPjax(ele, "click", shrinkEle);
       fragment.appendChild(ele);
     }
     if (service === "hl") {
@@ -1093,17 +1220,17 @@ const addHighlight = () => {
   if ($isPrismjs) {
     $syntaxHighlight.forEach((item) => {
       const langName = item.getAttribute("data-language") || "Code";
-      const highlightLangEle = `<div class="code-lang">${utils.escapeHtml(
+      const highlightLangEle = `<div class="code-lang">${Solitude.escapeHtml(
         langName
       )}</div>`;
-      utils.wrap(item, "figure", { class: "highlight" });
+      Solitude.wrap(item, "figure", { class: "highlight" });
       createEle(highlightLangEle, item);
     });
   } else {
     $syntaxHighlight.forEach((item) => {
       let langName = item.getAttribute("class").split(" ")[1];
       if (langName === "plain" || langName === undefined) langName = "Code";
-      const highlightLangEle = `<div class="code-lang">${utils.escapeHtml(
+      const highlightLangEle = `<div class="code-lang">${Solitude.escapeHtml(
         langName
       )}</div>`;
       createEle(highlightLangEle, item, "hl");
@@ -1122,8 +1249,8 @@ class toc {
     el.forEach((e) => {
       e.addEventListener("click", (event) => {
         event.preventDefault();
-        utils.scrollToDest(
-          utils.getEleTop(
+        Solitude.scrollToDest(
+          Solitude.getEleTop(
             document.getElementById(
               decodeURI(
                 (event.target.className === "toc-text"
@@ -1161,7 +1288,7 @@ class toc {
       if (top === 0) return false;
       let currentIndex = "";
       list.forEach((ele, index) => {
-        if (top > utils.getEleTop(ele) - 80) {
+        if (top > Solitude.getEleTop(ele) - 80) {
           currentIndex = index;
         }
       });
@@ -1181,11 +1308,11 @@ class toc {
       }
     };
 
-    window.tocScrollFn = utils.throttle(() => {
+    const tocScrollFn = Solitude.throttle(() => {
       const currentTop = window.scrollY || document.documentElement.scrollTop;
       findHeadPosition(currentTop);
     }, 100);
-    window.addEventListener("scroll", tocScrollFn);
+    lifecycle.listen(window, "scroll", tocScrollFn, { passive: true });
   }
 }
 
@@ -1202,7 +1329,7 @@ class tabs {
           const $tabItem = this.parentNode;
           if (!$tabItem.classList.contains("active")) {
             const $tabContent = $tabItem.parentNode.nextElementSibling;
-            const $siblings = utils.siblings($tabItem, ".active")[0];
+            const $siblings = Solitude.siblings($tabItem, ".active")[0];
             $siblings && $siblings.classList.remove("active");
             $tabItem.classList.add("active");
             const tabId = this.getAttribute("data-href").replace("#", "");
@@ -1215,22 +1342,25 @@ class tabs {
   }
 
   static lureAddListener() {
-    if (!GLOBAL_CONFIG.lure) return;
+    if (!Solitude.config.lure) return;
     const title = document.title;
-    document.addEventListener("visibilitychange", () => {
-      const { lure } = GLOBAL_CONFIG;
+    let restoreTimer;
+    lifecycle.listen(document, "visibilitychange", () => {
+      const { lure } = Solitude.config;
       document.title =
         document.visibilityState === "hidden" ? lure.jump : lure.back;
       if (document.visibilityState === "visible") {
-        setTimeout(() => {
+        clearTimeout(restoreTimer);
+        restoreTimer = setTimeout(() => {
           document.title = title;
         }, 2000);
       }
     });
+    lifecycle.add(() => clearTimeout(restoreTimer));
   }
 
   static expireAddListener() {
-    const { expire } = GLOBAL_CONFIG;
+    const { expire } = Solitude.config;
     if (!expire) return;
     const list = document.querySelectorAll(".post-meta-date time");
     const post_date = list.length
@@ -1260,7 +1390,7 @@ class tabs {
 }
 
 const scrollFnToDo = () => {
-  const { toc } = PAGE_CONFIG;
+  const { toc } = Solitude.page;
 
   if (toc) {
     const $cardTocLayout = document.getElementById("card-toc");
@@ -1270,8 +1400,8 @@ const scrollFnToDo = () => {
       if (!target) return;
 
       e.preventDefault();
-      utils.scrollToDest(
-        utils.getEleTop(
+      Solitude.scrollToDest(
+        Solitude.getEleTop(
           document.getElementById(
             decodeURI(target.getAttribute("href")).replace("#", "")
           )
@@ -1282,7 +1412,7 @@ const scrollFnToDo = () => {
         $cardTocLayout.classList.remove("open");
       }
     };
-    utils.addEventListenerPjax($cardToc, "click", tocItemClickFn);
+    Solitude.addEventListenerPjax($cardToc, "click", tocItemClickFn);
   }
 };
 
@@ -1329,47 +1459,50 @@ const initAboutCardGlow = () => {
   });
 };
 
-window.refreshFn = () => {
-  const { is_home, is_page, page, is_post, ai_text } = PAGE_CONFIG;
+Solitude.refresh = async () => {
+  lifecycle.disposePage();
+  await loadFeatureModules();
+  const { is_home, is_page, page, is_post, ai_text } = Solitude.page;
   const { runtime, lazyload, lightbox, randomlink, covercolor, lure, expire } =
-    GLOBAL_CONFIG;
+    Solitude.config;
   const timeSelector = ".datetime, .webinfo-item time, .post-meta-date time";
   document.body.setAttribute("data-type", page);
-  sco.changeTimeFormat(document.querySelectorAll(timeSelector));
-  runtime && sco.addRuntime();
+  Solitude.changeTimeFormat(document.querySelectorAll(timeSelector));
+  runtime && Solitude.addRuntime();
   [
     scrollFn,
     sidebarFn,
     initTooltip,
-    sco.addPhotoFigcaption,
-    sco.setTimeState,
-    sco.tagPageActive,
-    sco.categoriesBarActive,
-    sco.listenToPageInputPress,
-    sco.musicBind,
-    sco.addNavBackgroundInit,
-    sco.refreshWaterFall,
+    () => Solitude.addPhotoFigcaption(),
+    () => Solitude.setTimeState(),
+    () => Solitude.tagPageActive(),
+    () => Solitude.categoriesBarActive(),
+    () => Solitude.listenToPageInputPress(),
+    () => Solitude.musicBind(),
+    () => Solitude.addNavBackgroundInit(),
+    () => Solitude.refreshWaterFall(),
   ].forEach((fn) => fn());
-  lazyload.enable && utils.lazyloadImg();
+  lazyload.enable && Solitude.lazyloadImg();
   lightbox &&
-    utils.lightbox(
+    Solitude.lightbox(
       document.querySelectorAll(
         ".article-container img:not(.flink-avatar,.gallery-group img, .no-lightbox)"
       )
     );
-  randomlink && randomLinksList();
-  GLOBAL_CONFIG.friend_links.async && window.friendLinks?.init();
+  randomlink && Solitude.randomLinksList?.();
+  Solitude.config.friend_links.async && Solitude.friendLinks?.init();
   if (is_post) {
-    if (ai_text) {
+    if (ai_text && ai) {
       ai.init();
+      lifecycle.add(() => ai.cancel());
     }
   }
-  sco.switchComments();
+  Solitude.switchComments();
   initObserver();
   if (is_home) {
     showTodayCard();
     initHomeCenter();
-    sco.homeTypeit();
+    Solitude.homeTypeit();
   }
   typeof updatePostsBasedOnComments === "function" &&
     updatePostsBasedOnComments();
@@ -1381,26 +1514,41 @@ window.refreshFn = () => {
     tabs.expireAddListener();
   }
   if (covercolor.enable) coverColor();
-  if (PAGE_CONFIG.toc) toc.init();
+  if (Solitude.page.toc) toc.init();
   if (lure) tabs.lureAddListener();
-  page === "music" && initializeMusicPlayer();
+  if (page === "music") {
+    initializeMusicPlayer();
+    lifecycle.add(() => Solitude.musicPlayer?.destroy?.());
+  }
+  if (page === "archive") {
+    const { archivePageController, initArchivePage } = await import("./archive-page.js");
+    initArchivePage();
+    lifecycle.add(() => archivePageController.destroy());
+  }
   initAboutCardGlow();
   forPostFn();
 };
 
-document.addEventListener("DOMContentLoaded", () => {
-  [
-    addCopyright,
-    window.refreshFn,
-    asideStatus,
-    () => (window.onscroll = percent),
-    sco.initConsoleState,
-  ].forEach((fn) => fn());
-});
+const initializeApp = async () => {
+  initActionDelegation(Solitude);
+  initPreloader(Solitude);
+  addCopyright();
+  await Solitude.refresh();
+  asideStatus();
+  window.onscroll = percent;
+  Solitude.initConsoleState();
+  lifecycle.emit("ready", { config: Solitude.config, page: Solitude.page });
+};
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initializeApp, { once: true });
+} else {
+  initializeApp();
+}
 
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) {
-    sco.wasPageHidden = true;
+    Solitude.wasPageHidden = true;
   }
 });
 
@@ -1410,13 +1558,13 @@ window.onkeydown = (e) => {
     code === "F12" ||
     (ctrlKey && shiftKey && (code === "KeyI" || code === "KeyC"))
   ) {
-    utils.snackbarShow(GLOBAL_CONFIG.lang.f12, false, 3000);
+    Solitude.snackbarShow(Solitude.config.lang.f12, false, 3000);
   }
   if (code === "Escape") {
-    sco.hideConsole();
+    Solitude.hideConsole();
   }
 };
 
 document.addEventListener("copy", () => {
-  utils.snackbarShow(GLOBAL_CONFIG.lang.copy.success, false, 3000);
+  Solitude.snackbarShow(Solitude.config.lang.copy.success, false, 3000);
 });

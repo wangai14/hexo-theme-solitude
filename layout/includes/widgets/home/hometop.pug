@@ -48,7 +48,7 @@ if homeCenterItems.length
                   alt=item.title
                   loading=index === 0 ? 'eager' : 'lazy'
                   fetchpriority=index === 0 ? 'high' : 'auto'
-                  onerror=`this.onerror=null;this.src='${fallbackCover}'`
+                  data-solitude-fallback=url_for(fallbackCover)
                 )
               .home-center-mask
 
@@ -84,7 +84,7 @@ if homeCenterItems.length
                     src=url_for(item.cover)
                     alt=''
                     loading='lazy'
-                    onerror=`this.onerror=null;this.src='${fallbackCover}'`
+                    data-solitude-fallback=url_for(fallbackCover)
                   )
                 .home-center-item-title
                   a(href=url_for(item.url))= item.title

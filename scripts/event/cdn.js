@@ -46,7 +46,7 @@ hexo.extend.filter.register("before_generate", () => {
       const cdnjs_file = file.replace(/^[lib|dist]*\/|browser\//g, "");
       const min_cdnjs_file = minFile(cdnjs_file);
       if (cond === "internal") file = `source/${file}`;
-      const min_file = minFile(file);
+      const min_file = cond === "internal" ? file : minFile(file);
       const verType = CDN.version
         ? type === "local"
           ? `?v=${version}`

@@ -22,8 +22,7 @@ if rewardList.length && award && award.enable
             tabindex='0'
             title=_p('award.tipping')
             aria-label=_p('award.tipping')
-            onclick='AddRewardMask()'
-            onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();AddRewardMask()}"
+            data-solitude-action='showReward'
           )
             i.solitude.fas.fa-heart(aria-hidden='true')
             = _p('award.tipping')

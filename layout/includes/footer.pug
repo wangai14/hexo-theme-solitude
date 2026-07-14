@@ -49,7 +49,7 @@ mixin footerDeals()
         #footer_mini_logo.nolazyload.footer_mini_logo(
           title=_p('nav.backtop')
           heotip=_p('nav.backtop')
-          onclick="sco.toTop()"
+          data-solitude-action="toTop"
         )
           img(src=information.author, alt=_p('nav.backtop'))
 
@@ -83,7 +83,7 @@ mixin footerGroups()
           .footer-title-group
             h3.footer-title= _p('footer.randomlink')
             button.random-friends-btn(
-              onclick='randomLinksList()'
+              data-solitude-action='randomLinksList'
               title=_p('footer.randomlink')
               heotip=_p('footer.randomlink')
             )

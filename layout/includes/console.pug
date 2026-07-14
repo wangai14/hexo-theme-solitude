@@ -5,10 +5,10 @@
 
 div#console
     div.console-content
-        div.console-card-group(onclick="sco.onConsoleCardGroupClick(event)")
+        div.console-card-group(data-solitude-action="onConsoleCardGroupClick" data-solitude-event="true")
             if use && recentComment.enable
                 div.console-card-group-left
-                    div.console-card#card-newest-comments(onclick="sco.hideConsole()")
+                    div.console-card#card-newest-comments(data-solitude-action="hideConsole")
                         div.card-content
                             div.author-content-item-tips= _p('console.comment_tip')
                             div.author-content-item-title
@@ -34,7 +34,7 @@ div#console
             if card.tags || card.archive
                 div.console-card-group-right
                     if card.tags
-                        div.console-card.tags(onclick="sco.hideConsole()")
+                        div.console-card.tags(data-solitude-action="hideConsole")
                             div.card-content
                                 div.author-content-item-tips= _p('console.tag_tip')
                                 div.author-content-item-title= _p('console.tag_title')
@@ -43,7 +43,7 @@ div#console
                                     a(href=url_for(tag.path))= tag.name
                                         sup= tag.length
                     if card.archive
-                        div.console-card.history(onclick="sco.hideConsole()")
+                        div.console-card.history(data-solitude-action="hideConsole")
                             - var archives = getArchiveLength(card.archive ? card.archive : 'year')
                             ul.card-archive-list
                                 each value, key in archives
@@ -62,21 +62,21 @@ div#console
 
         div.button-group
             div.console-btn-item
-                span.darkmode_switchbutton(onclick="sco.switchDarkMode()", title=_p('console.switch_darkmode'), heotip=_p('console.switch_darkmode'))
+                span.darkmode_switchbutton(data-solitude-action="toggleTheme" title=_p('console.switch_darkmode') heotip=_p('console.switch_darkmode'))
                     i.solitude.fas.fa-circle-half-stroke
             div.console-btn-item#consoleHideAside
-                span.asideSwitch(onclick="sco.switchHideAside()", title=_p('console.switch_hideAside'), heotip=_p('console.switch_hideAside'))
+                span.asideSwitch(data-solitude-action="switchHideAside" title=_p('console.switch_hideAside') heotip=_p('console.switch_hideAside'))
                     i.solitude.fas.fa-arrows-left-right-to-line
             if theme.keyboard.enable
-                div.console-btn-item#consoleKeyboard(onclick="sco.switchKeyboard()")
+                div.console-btn-item#consoleKeyboard(data-solitude-action="switchKeyboard")
                     span.keyboardSwitch(title=_p('console.switch_keyboard'), heotip=_p('console.switch_keyboard'))
                         i.solitude.fas.fa-keyboard
             if theme.capsule.enable
-                div.console-btn-item#consoleMusic(onclick="sco.musicToggle()")
+                div.console-btn-item#consoleMusic(data-solitude-action="musicToggle")
                     span.music-switch(title=_p('console.switch_music'), heotip=_p('console.switch_music'))
                         i.solitude.fas.fa-compact-disc
             if theme.comment.use && theme.comment.commentBarrage
-                div.console-btn-item.on#consoleCommentBarrage(onclick="sco.switchCommentBarrage()")
+                div.console-btn-item.on#consoleCommentBarrage(data-solitude-action="switchCommentBarrage")
                     span.commentBarrage(title=_p('commentBarrage.title') heotip=_p('commentBarrage.title'))
                         i.solitude.fas.fa-comment
-    div.console-mask(onclick="sco.hideConsole()")
+    div.console-mask(data-solitude-action="hideConsole")

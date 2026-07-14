@@ -25,7 +25,7 @@
 - const wordCount = categories.map(category => category.name).join('').length
 .category-bar-more-group
   if wordCount > 40 || categories.data.length > 10
-    button.category-bar-next#category-bar-next(type='button', onclick='sco.scrollCategoryBarToRight()', aria-label=_p('tooltip.category_next'), title=_p('tooltip.category_next'), heotip=_p('tooltip.category_next'))
+    button.category-bar-next#category-bar-next(type='button' data-solitude-action='scrollCategoryBarToRight' aria-label=_p('tooltip.category_next') title=_p('tooltip.category_next') heotip=_p('tooltip.category_next'))
       i.solitude.fas.fa-angles-right
   if theme.page.categories
     a.category-bar-more(href=url_for('/categories/'), title=__('more'), heotip=_p('tooltip.categories'))= __('more')
