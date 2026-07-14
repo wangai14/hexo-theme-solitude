@@ -5,6 +5,8 @@
 include ./mixins/common.pug
 
 - const { information, group } = theme.footer
+- const hexoUrl = 'https://hexo.io/'
+- const themeRepoUrl = 'https://github.com/everfu/hexo-theme-solitude'
 
 //- 文章页脚栏组件
 mixin postFooterBar()
@@ -114,11 +116,11 @@ mixin beianInfo()
               img.beian-icon(src=url_for(item.icon), alt=item.name)
           span.beian-name= item.name
     
-    +link(_p('hexo'), _p('framework_by') + 'Hexo', {
+    +link(hexoUrl, _p('framework_by') + 'Hexo', {
       class: 'footer-bar-link',
       heotip: _p('framework_by') + 'Hexo'
     })
-    +link(_p('repo'), _p('theme_by') + 'Solitude', {
+    +link(themeRepoUrl, _p('theme_by') + 'Solitude', {
       class: 'footer-bar-link',
       heotip: _p('theme_by') + 'Solitude'
     })

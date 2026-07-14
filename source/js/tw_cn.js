@@ -1,7 +1,14 @@
 import { Solitude } from "./core/api.js";
 
 const initializeTranslation = () => {
-    const { defaultEncoding, translateDelay } = Solitude.config.translate;
+    const {
+        defaultEncoding,
+        translateDelay,
+        toSimplified,
+        toTraditional,
+        switchedToSimplified,
+        switchedToTraditional,
+    } = Solitude.config.translate;
     const targetEncodingCookie = 'translate-chn-cht';
 
     let currentEncoding = defaultEncoding;
@@ -25,6 +32,9 @@ const initializeTranslation = () => {
             if (obj.title) obj.title = translateText(obj.title);
             if (obj.alt) obj.alt = translateText(obj.alt);
             if (obj.placeholder) obj.placeholder = translateText(obj.placeholder);
+            if (obj.getAttribute?.('heotip')) {
+                obj.setAttribute('heotip', translateText(obj.getAttribute('heotip')));
+            }
             if (obj.tagName === 'INPUT' && obj.value && !['text', 'hidden'].includes(obj.type)) {
                 obj.value = translateText(obj.value);
             }
@@ -36,12 +46,19 @@ const initializeTranslation = () => {
         });
     }
 
-    function translatePage(simplified, traditional, button) {
+    function updateButtonLabel(button, label) {
+        const textNode = button.lastElementChild || button.lastChild;
+        if (textNode) textNode.textContent = label;
+        button.setAttribute('title', label);
+        button.setAttribute('heotip', label);
+    }
+
+    function translatePage(button, simplified = toSimplified, traditional = toTraditional) {
         currentEncoding = targetEncoding;
         targetEncoding = targetEncoding === 1 ? 2 : 1;
-        button.lastChild.textContent = targetEncoding === 1 ? simplified : traditional;
+        updateButtonLabel(button, targetEncoding === 1 ? simplified : traditional);
 
-        Solitude.snackbarShow(targetEncoding === 1 ? '你已切換為繁體' : '你已切换为简体');
+        Solitude.snackbarShow(targetEncoding === 1 ? switchedToTraditional : switchedToSimplified);
         Solitude.saveToLocal.set(targetEncodingCookie, targetEncoding, 2);
         setLang();
         translateBody();
@@ -77,12 +94,12 @@ const initializeTranslation = () => {
     function translateInitialization() {
         const btn_1 = document.getElementById('menu-translate');
         if (btn_1) {
-            btn_1.lastChild.textContent = targetEncoding === 1 ? '转为简体' : '转为繁体';
+            updateButtonLabel(btn_1, targetEncoding === 1 ? toSimplified : toTraditional);
             if (currentEncoding !== targetEncoding) {
                 setLang();
                 setTimeout(translateBody, translateDelay);
             }
-            btn_1.addEventListener('click', () => translatePage('转为简体', '转为繁体', btn_1), false);
+            btn_1.addEventListener('click', () => translatePage(btn_1), false);
         }
 
         const btn_2 = document.querySelector('.rs_hide .translate');
@@ -92,7 +109,7 @@ const initializeTranslation = () => {
                 setLang();
                 setTimeout(translateBody, translateDelay);
             }
-            btn_2.addEventListener('click', () => translatePage('简', '繁', btn_2), false);
+            btn_2.addEventListener('click', () => translatePage(btn_2, '简', '繁'), false);
         }
     }
 

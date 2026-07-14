@@ -607,9 +607,10 @@ const actions = {
       const $rmText = document.querySelector("#menu-music-toggle span");
       const $rmIcon = document.querySelector("#menu-music-toggle i");
       if ($rmText) {
-        $rmText.textContent = this.musicPlaying
+        const label = this.musicPlaying
           ? Solitude.config.right_menu.music.stop
           : Solitude.config.right_menu.music.start;
+        Solitude.rightMenu.setLabel($rmText, label);
       }
       if ($rmIcon) {
         $rmIcon.className = `solitude fas ${this.musicPlaying ? "fa-pause" : "fa-play"}`;
