@@ -288,10 +288,8 @@ const initHomeCenter = () => {
     image.onload = () => {
       if (!container.isConnected) return;
       try {
-        const rgb =
-          typeof ColorThief === "function"
-            ? new ColorThief().getColor(image)
-            : getAverageColor(image);
+        const dominantColor = window.ColorThief?.getColorSync(image);
+        const rgb = dominantColor ? dominantColor.array() : getAverageColor(image);
         if (!rgb) return;
         const color = rgbToThemeHex(rgb);
         cacheColor(src, color);

@@ -39,9 +39,12 @@ hexo.extend.filter.register("before_generate", () => {
   const minFile = (file) =>
     file.replace(/(?<!\.min)\.(js|css)$/g, (ext) => `.min${ext}`);
 
+  const formatCDN = (format, value) =>
+    (format || "").replace(/\$\{(.+?)}/g, (match, key) => value[key]);
+
   const createCDNLink = (data, type, cond = "") => {
     Object.keys(data).forEach((key) => {
-      let { name, version, file, other_name } = data[key];
+      let { name, version, file, other_name, cdnjs_format } = data[key];
       const cdnjs_name = other_name || name;
       const cdnjs_file = file.replace(/^[lib|dist]*\/|browser\//g, "");
       const min_cdnjs_file = minFile(cdnjs_file);
@@ -70,11 +73,12 @@ hexo.extend.filter.register("before_generate", () => {
             : `/pluginsSrc/${name}/${file + verType}`,
         jsdelivr: `https://cdn.jsdelivr.net/npm/${name}${verType}/${min_file}`,
         unpkg: `https://unpkg.com/${name}${verType}/${file}`,
-        cdnjs: `https://cdnjs.cloudflare.com/ajax/libs/${cdnjs_name}/${version}/${min_cdnjs_file}`,
-        custom: (CDN.custom_format || "").replace(
-          /\$\{(.+?)}/g,
-          (match, $1) => value[$1]
+        cdnjs: formatCDN(
+          cdnjs_format ||
+            "https://cdnjs.cloudflare.com/ajax/libs/${cdnjs_name}/${version}/${min_cdnjs_file}",
+          value
         ),
+        custom: formatCDN(CDN.custom_format, value),
       };
 
       data[key] = cdnSource[type];

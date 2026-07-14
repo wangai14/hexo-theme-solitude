@@ -138,23 +138,35 @@
         if (!window.fancyboxRun) {
           Fancybox.bind("[data-fancybox]", {
             Hash: false,
-            animated: true,
-            Thumbs: { showOnStart: false },
-            Images: { Panzoom: { maxScale: 4 } },
-            Carousel: { transition: "slide" },
-            Toolbar: {
-              display: {
-                left: ["infobar"],
-                middle: [
-                  "zoomIn",
-                  "zoomOut",
-                  "toggle1to1",
-                  "rotateCCW",
-                  "rotateCW",
-                  "flipX",
-                  "flipY",
-                ],
-                right: ["slideshow", "thumbs", "close"],
+            Carousel: {
+              transition: "slide",
+              Thumbs: { showOnStart: false },
+              Zoomable: { Panzoom: { maxScale: 4 } },
+              Toolbar: {
+                display: {
+                  left: ["counter"],
+                  middle: [],
+                  right: ["thumbs", "close"],
+                },
+              },
+              breakpoints: {
+                "(min-width: 768px)": {
+                  Toolbar: {
+                    display: {
+                      left: ["counter"],
+                      middle: [
+                        "zoomIn",
+                        "zoomOut",
+                        "toggle1to1",
+                        "rotateCCW",
+                        "rotateCW",
+                        "flipX",
+                        "flipY",
+                      ],
+                      right: ["autoplay", "thumbs", "close"],
+                    },
+                  },
+                },
               },
             },
           });

@@ -80,12 +80,12 @@ pace_js:
 swiper_css:
   name: swiper
   file: swiper-bundle.min.css
-  version: 11.2.10
+  version: 14.0.5
   other_name: Swiper
 swiper_js:
   name: swiper
   file: swiper-bundle.min.js
-  version: 11.2.10
+  version: 14.0.5
   other_name: Swiper
 busuanzi_js:
   name: busuanzi
@@ -98,7 +98,7 @@ snackbar:
 fontawesome:
   name: "@fortawesome/fontawesome-free"
   file: css/all.min.css
-  version: 6.7.2
+  version: 7.3.0
   other_name: font-awesome
 medium_zoom:
   name: medium-zoom
@@ -106,13 +106,13 @@ medium_zoom:
   version: 1.1.0
 fancyapps_ui:
   name: "@fancyapps/ui"
-  file: dist/fancybox/fancybox.umd.min.js
-  version: 5.0.36
+  file: dist/fancybox/fancybox.umd.js
+  version: 6.1.14
   other_name: fancyapps-ui
 fancyapps_css:
   name: "@fancyapps/ui"
-  file: dist/fancybox/fancybox.min.css
-  version: 5.0.36
+  file: dist/fancybox/fancybox.css
+  version: 6.1.14
   other_name: fancyapps-ui
 mermaid_js:
   name: mermaid
@@ -139,6 +139,7 @@ qrcode:
   other_name: qrcodejs
 color_thief:
   name: colorthief
-  file: dist/color-thief.min.js
-  version: 2.7.0
+  file: dist/umd/color-thief.global.js
+  version: 3.4.0
   other_name: color-thief
+  cdnjs_format: https://cdn.jsdelivr.net/npm/${name}@${version}/${min_file}
