@@ -1419,6 +1419,44 @@ const forPostFn = () => {
   scrollFnToDo();
 };
 
+const initPostCoverTilt = () => {
+  const cover = document.querySelector(".post-cover-aside");
+  const canTilt = window.matchMedia(
+    "(hover: hover) and (pointer: fine)"
+  ).matches;
+  const reduceMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)"
+  ).matches;
+  if (!cover || !canTilt || reduceMotion) return;
+
+  const updateTilt = (event) => {
+    const rect = cover.getBoundingClientRect();
+    const x = (event.clientX - rect.left) / rect.width;
+    const y = (event.clientY - rect.top) / rect.height;
+    const rotateX = (0.5 - y) * 10;
+    const rotateY = (x - 0.5) * 10;
+
+    cover.style.setProperty("--post-cover-glow-x", `${(x * 100).toFixed(2)}%`);
+    cover.style.setProperty("--post-cover-glow-y", `${(y * 100).toFixed(2)}%`);
+    cover.style.setProperty("--post-cover-rotate-x", `${rotateX.toFixed(2)}deg`);
+    cover.style.setProperty("--post-cover-rotate-y", `${rotateY.toFixed(2)}deg`);
+    cover.style.setProperty("--post-cover-img-x", `${(-rotateY).toFixed(2)}px`);
+    cover.style.setProperty("--post-cover-img-y", `${rotateX.toFixed(2)}px`);
+  };
+
+  const resetTilt = () => {
+    cover.style.setProperty("--post-cover-rotate-x", "0deg");
+    cover.style.setProperty("--post-cover-rotate-y", "0deg");
+    cover.style.setProperty("--post-cover-img-x", "0px");
+    cover.style.setProperty("--post-cover-img-y", "0px");
+  };
+
+  lifecycle.listen(cover, "pointerenter", updateTilt);
+  lifecycle.listen(cover, "pointermove", updateTilt);
+  lifecycle.listen(cover, "pointerleave", resetTilt);
+  lifecycle.listen(cover, "pointercancel", resetTilt);
+};
+
 const initAboutCardGlow = () => {
   const aboutPage = document.getElementById("about-page");
   const canHover = window.matchMedia(
@@ -1491,6 +1529,7 @@ Solitude.refresh = async () => {
   randomlink && Solitude.randomLinksList?.();
   Solitude.config.friend_links.async && Solitude.friendLinks?.init();
   if (is_post) {
+    initPostCoverTilt();
     if (ai_text && ai) {
       ai.init();
       lifecycle.add(() => ai.cancel());

@@ -27,6 +27,14 @@
         height 15rem
 
   .post-cover-aside
+    --post-cover-glow-x 50%
+    --post-cover-glow-y 50%
+    --post-cover-glow-opacity 0
+    --post-cover-img-x 0px
+    --post-cover-img-y 0px
+    --post-cover-rotate-x 0deg
+    --post-cover-rotate-y 0deg
+    --post-cover-scale 1
     position absolute
     top 50%
     right max(calc((100vw - 1400px) / 2 + 30px), 30px)
@@ -36,26 +44,39 @@
     aspect-ratio 16 / 9
     overflow hidden
     border-radius 16px
-    box-shadow 0 8px 16px -4px rgba(0, 0, 0, .32)
-    transform translateY(-50%)
+    box-shadow var(--efu-shadow-border)
+    transform translate3d(0, -50%, 0) perspective(900px) rotateX(var(--post-cover-rotate-x)) rotateY(var(--post-cover-rotate-y)) scale3d(var(--post-cover-scale), var(--post-cover-scale), 1)
+    transform-style preserve-3d
     transition transform .18s ease-out, box-shadow .18s ease-out
 
+    &::before,
     &::after
       position absolute
       inset 0
       border-radius inherit
-      background radial-gradient(circle at 50% 50%, rgba(255, 255, 255, .22), rgba(255, 255, 255, .08) 22%, transparent 55%)
       content ""
-      opacity 0
+      opacity var(--post-cover-glow-opacity)
       pointer-events none
       transition opacity .18s ease-out
 
-    &:hover
-      box-shadow 0 8px 16px -4px var(--efu-main)
-      transform translateY(-50%) scale(1.035)
+    &::before
+      padding 2px
+      background radial-gradient(circle at var(--post-cover-glow-x) var(--post-cover-glow-y), #fff, rgba(255, 255, 255, .7) 20%, rgba(255, 255, 255, .1) 46%, rgba(255, 255, 255, 0) 62%)
+      transform translateZ(26px)
+      -webkit-mask linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)
+      -webkit-mask-composite xor
+      mask linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)
+      mask-composite exclude
 
-      &::after
-        opacity 1
+    &::after
+      background radial-gradient(circle at var(--post-cover-glow-x) var(--post-cover-glow-y), rgba(255, 255, 255, .22), rgba(255, 255, 255, .08) 22%, rgba(255, 255, 255, 0) 55%)
+      mix-blend-mode screen
+      transform translateZ(25px)
+
+    &:hover
+      --post-cover-glow-opacity 1
+      --post-cover-scale 1.035
+      box-shadow var(--efu-shadow-main)
 
     +maxWidth1200()
       display none
@@ -72,11 +93,19 @@
       height 100%
       border-radius inherit
       object-fit cover
-      transform scale(1.08)
+      transform translate3d(var(--post-cover-img-x), var(--post-cover-img-y), 24px) scale(1.08)
       transition transform .18s ease-out
 
-    &:hover .post-cover-aside-img
-      transform scale(1.1)
+    @media (prefers-reduced-motion: reduce)
+      transition none
+
+      &::before,
+      &::after,
+      .post-cover-aside-img
+        transition none
+
+      &:hover
+        --post-cover-scale 1
 
   #post-info
     position absolute
