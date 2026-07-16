@@ -26,13 +26,16 @@ hexo.extend.filter.register(
           icon: null,
         },
         group: null,
-        recommendList: {
-          sup: "Recommend",
-          title: "Solitude Docs",
-          url: "https://solitude.js.org/",
-          img: "/img/default.avif",
-          color: "none",
-        },
+        recommendList: [
+          {
+            order: 1,
+            sup: "Recommend",
+            title: "Solitude Docs",
+            url: "https://solitude.js.org/",
+            img: "/img/default.avif",
+            color: "none",
+          },
+        ],
       },
       aside: {
         home: { noSticky: "about", Sticky: "allInfo" },

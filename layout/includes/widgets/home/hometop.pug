@@ -1,14 +1,36 @@
 -
-  const recommendConfig = theme.hometop.recommendList || {}
-  const fallbackCover = url_for(recommendConfig.img || '/img/default.avif')
-  const recentCoverPosts = site.posts.sort('-date').data.filter(post => post.cover).slice(0, 5)
-  const featureItem = recommendConfig.enable ? {
-    title: recommendConfig.title,
-    url: recommendConfig.url,
-    cover: recommendConfig.img,
-    label: recommendConfig.sup,
-    color: recommendConfig.color
-  } : null
+  const recommendConfig = theme.hometop.recommendList || []
+  const recommendEntries = Array.isArray(recommendConfig)
+    ? recommendConfig
+    : Array.isArray(recommendConfig.list)
+      ? recommendConfig.enable === false ? [] : recommendConfig.list
+      : recommendConfig.enable
+        ? [recommendConfig]
+        : []
+  const hasOrder = item => item.order !== undefined && item.order !== null && item.order !== '' && Number.isFinite(Number(item.order))
+  const configuredItems = recommendEntries
+    .map((item, sourceIndex) => ({ item, sourceIndex }))
+    .filter(({ item }) => item && item.enable !== false && item.title && item.url && (item.img || item.cover))
+    .sort((a, b) => {
+      const aHasOrder = hasOrder(a.item)
+      const bHasOrder = hasOrder(b.item)
+      if (aHasOrder && bHasOrder) return Number(a.item.order) - Number(b.item.order) || a.sourceIndex - b.sourceIndex
+      if (aHasOrder) return -1
+      if (bHasOrder) return 1
+      return a.sourceIndex - b.sourceIndex
+    })
+    .map(({ item }) => ({
+      title: item.title,
+      url: item.url,
+      cover: item.img || item.cover,
+      label: item.sup || item.label || '',
+      color: item.color || ''
+    }))
+  const normalizeUrl = value => String(value || '').replace(/^\/+|\/+$/g, '')
+  const configuredUrls = new Set(configuredItems.map(item => normalizeUrl(item.url)))
+  const recentCoverPosts = site.posts.sort('-date').data
+    .filter(post => post.cover && !configuredUrls.has(normalizeUrl(post.path)))
+    .slice(0, Math.max(0, 5 - configuredItems.length))
   const postItems = recentCoverPosts.map(post => ({
     title: post.title,
     url: post.path,
@@ -16,7 +38,8 @@
     label: post.categories && post.categories.data.length ? post.categories.data[0].name : '',
     color: post.banner_color || post.theme_color || ''
   }))
-  const homeCenterItems = (featureItem ? [featureItem] : []).concat(postItems).slice(0, 5)
+  const homeCenterItems = configuredItems.concat(postItems).slice(0, 5)
+  const fallbackCover = url_for('/img/default.avif')
   const explicitColor = color => color && !String(color).includes('var(') ? color : ''
   const initialColor = homeCenterItems.length ? explicitColor(homeCenterItems[0].color) || 'var(--efu-main)' : 'var(--efu-main)'
   const initialStyle = `--current-theme:${initialColor};--current-theme-op:color-mix(in srgb, ${initialColor} 14%, transparent);--current-theme-op-deep:color-mix(in srgb, ${initialColor} 87%, transparent)`
@@ -39,7 +62,7 @@ if homeCenterItems.length
               data-index=index
               data-link=url_for(item.url)
               data-title=item.title
-              data-label=item.label || recommendConfig.sup || ''
+              data-label=item.label || ''
               data-color=configuredColor
             )
               .home-center-cover
@@ -56,7 +79,7 @@ if homeCenterItems.length
           a.home-center-title-link(href=url_for(homeCenterItems[0].url))= homeCenterItems[0].title
           .home-center-title-tag
             i.solitude.fas.fa-star
-            span= homeCenterItems[0].label || recommendConfig.sup || ''
+            span= homeCenterItems[0].label || ''
           .home-center-indicators(aria-label='推荐内容切换')
             each item, index in homeCenterItems
               button.home-center-indicator(

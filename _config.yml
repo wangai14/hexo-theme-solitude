@@ -96,13 +96,15 @@ hometop:
       #   color: "#df5b40"
   group:
     # 热门: /tags/Fire/ || fas fa-fire || linear-gradient(to right,#f65,#ffbf37)
+  # Recommended items are sorted by order; items without order keep their declared order.
+  # 推荐内容按 order 升序排列；未设置 order 时保持声明顺序。
   recommendList:
-    enable: true
-    sup: 置顶
-    title: Solitude 官方文档
-    url: https://solitude.js.org/
-    img: /img/default.avif
-    color: "none"
+    - order: 1
+      sup: 置顶
+      title: Solitude 官方文档
+      url: https://solitude.js.org/
+      img: /img/default.avif
+      color: "none"
 # --------------------------- end ---------------------------
 
 # --------------------------- start ---------------------------
