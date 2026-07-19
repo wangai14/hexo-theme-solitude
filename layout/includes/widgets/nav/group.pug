@@ -9,7 +9,7 @@ if menu
                         - var array = data.split('||')
                         - var itemUrl = trim(array[0])
                         - var isTravelling = itemUrl === 'javascript:travelling()'
-                        a.back-menu-item(href=isTravelling ? 'javascript:void(0);' : url_for(itemUrl), data-solitude-action=isTravelling ? 'travelling' : null, data-solitude-prevent=isTravelling ? 'true' : null, title=label, heotip=label)
+                        a.back-menu-item(href=isTravelling ? 'javascript:void(0);' : url_for(itemUrl), data-solitude-action=isTravelling ? 'travelling' : null, data-solitude-prevent=isTravelling ? 'true' : null, title=disableMenuTooltips ? null : label, heotip=disableMenuTooltips ? null : label)
                             if array[1]
                                 img.nolazyload.back-menu-item-icon(src=trim(array[1]), alt=label)
                             span.back-menu-item-text= label
