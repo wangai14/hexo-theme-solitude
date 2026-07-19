@@ -388,7 +388,6 @@ hexo.extend.filter.register(
       },
       rightside: {
         enable: false,
-        percent: false,
         hide: {
           enable: false,
           translate: false,

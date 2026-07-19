@@ -93,10 +93,25 @@
       overflow hidden
       padding 4px
       gap 6px
-      border var(--style-border-always)
+      border var(--style-border)
       border-color var(--efu-none)
       border-radius 99px
       transition box-shadow .3s, border-color .3s, backdrop-filter .3s, background-color .3s, width .3s, max-width .3s, height .3s, max-height .3s, padding .3s, margin .3s
+
+      +minWidth768()
+        &::before
+          content ''
+          position absolute
+          inset 0
+          border-radius inherit
+          background linear-gradient(to bottom, var(--efu-maskbg), var(--efu-maskbgdeep))
+          opacity 0
+          transition opacity .3s
+          pointer-events none
+
+        > *
+          position relative
+          z-index 1
 
       +maxWidth768()
         margin-right 12px
@@ -186,17 +201,6 @@
             &.totopbtn
               width 70px
 
-        &:hover
-          a
-            &.totopbtn
-              background var(--efu-lighttext)
-
-        &:not(.long):hover
-          a
-            &.totopbtn
-              transform scale(1.167)
-              transform-origin center center
-
   &.nav-fixed
     #nav
       position fixed
@@ -216,8 +220,14 @@
         -webkit-backdrop-filter blur(20px)
         backdrop-filter blur(20px)
 
-      #blog_name,
-      #nav-right
+        &::before
+          opacity 1
+
+        [data-theme="dark"] &
+          border-color var(--efu-none)
+          box-shadow var(--efu-shadow-glass-inset)
+
+      #blog_name
         background linear-gradient(to bottom, var(--efu-maskbg), var(--efu-maskbgdeep))
 
         [data-theme="dark"] &
@@ -682,6 +692,7 @@
   width 35px
   height 35px
   display flex
+  opacity 0
   border-radius 40px
   transition all .3s ease-in-out
   align-items center
@@ -690,7 +701,7 @@
     width 80px
 
   .totopbtn
-    padding-top 0
+    padding 0
 
     i
       position absolute
@@ -701,6 +712,8 @@
 
   &:hover
     .totopbtn
+      background var(--efu-lighttext)
+
       i
         opacity 1
         color var(--efu-card-bg)
@@ -709,6 +722,11 @@
     #percent
       opacity 0
       font-weight 700
+
+  &:not(.long):hover
+    .totopbtn
+      transform scale(1.167)
+      transform-origin center center
 
   #percent
     font-size 12px
@@ -728,6 +746,25 @@
     align-items center
     transition .3s
     white-space nowrap
+
+#page-header:not(.nav-at-top)
+  #nav-totop
+    opacity 1
+
+[data-theme='dark']
+  #page-header
+    #nav
+      #nav-right
+        #nav-totop
+          a.totopbtn
+            --glass-radial-start #ffc848
+            --glass-radial-middle rgba(255, 218, 42, .8)
+            --glass-radial-end rgba(255, 218, 42, 0)
+            background radial-gradient(ellipse at 50% 110%, var(--glass-radial-start) 33%, var(--glass-radial-middle) 66%, var(--glass-radial-end) 100%)
+
+          &:hover
+            a.totopbtn
+              background radial-gradient(ellipse at 50% 110%, var(--glass-radial-start) 33%, var(--glass-radial-middle) 90%, var(--glass-radial-end) 100%)
 
 if hexo-config('nav.group')
   .back-home-button

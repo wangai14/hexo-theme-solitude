@@ -144,8 +144,7 @@ const percent = () => {
     ? Math.round((scrollPos / totalScrollableHeight) * 100)
     : 0;
   const navToTop = document.querySelector("#nav-totop");
-  const rsToTop = document.querySelector(".rs_show .top i");
-  const percentDisplay = document.querySelector("#percent");
+  const percentDisplay = document.querySelector("#nav-totop #percent");
   const endTarget =
     document.getElementById("post-comment") || document.getElementById("footer");
   const isNearEnd = endTarget
@@ -153,12 +152,9 @@ const percent = () => {
     : false;
 
   navToTop?.classList.toggle("long", isNearEnd || scrolledPercent > 90);
-  rsToTop?.classList.toggle("show", isNearEnd || scrolledPercent > 90);
   if (percentDisplay) percentDisplay.textContent =
     isNearEnd || scrolledPercent > 90
-      ? navToTop
-        ? Solitude.config.lang.backtop
-        : ""
+      ? Solitude.config.lang.backtop
       : scrolledPercent;
 
   document
@@ -469,7 +465,7 @@ const initObserver = () => {
         if (Solitude.config.comment?.commentBarrage && commentBarrageElement) {
           commentBarrageElement.style.bottom = entry.isIntersecting
             ? "-200px"
-            : "0px";
+            : "";
         }
       });
     });

@@ -19,11 +19,10 @@ if theme.console.enable
                 i.left
                 i.center
                 i.right
-if !theme.rightside.percent
-    .nav-button#nav-totop(data-solitude-action="toTop" title=_p('nav.backtop') heotip=_p('nav.backtop'))
-        a.totopbtn
-            i.solitude.fas.fa-arrow-up
-            span#percent= "0"
+.nav-button#nav-totop(data-solitude-action="toTop" title=_p('nav.backtop') heotip=_p('nav.backtop'))
+    a.totopbtn
+        i.solitude.fas.fa-arrow-up
+        span#percent= "0"
 #toggle-menu
     a.site-page
         i.solitude.fas.fa-bars
