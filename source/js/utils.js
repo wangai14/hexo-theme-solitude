@@ -225,6 +225,18 @@
             "'": "&#039;",
           }[m])
       ),
+    owoBig: (owoSelector) => {
+      const execute = () => {
+        if (typeof window.Solitude.owoBig === 'function' && window.Solitude.owoBig !== utilsFn.owoBig) {
+          window.Solitude.owoBig(owoSelector);
+        }
+      };
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', execute);
+      } else {
+        setTimeout(execute, 100);
+      }
+    },
   };
   Object.assign(window.Solitude, utilsFn);
 })();
