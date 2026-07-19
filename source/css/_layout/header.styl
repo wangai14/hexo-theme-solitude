@@ -705,10 +705,17 @@
 
     i
       position absolute
+      top 0
+      left 0
+      width 100%
+      height 100%
       display flex
-      font-size 22px
+      align-items center
+      justify-content center
+      font-size 14px !important
       opacity 0
-      line-height 1
+      margin 0
+      padding 0
 
   &:hover
     .totopbtn
@@ -757,11 +764,11 @@
       #nav-right
         #nav-totop
           a.totopbtn
-            --glass-radial-start #ffc848
-            --glass-radial-middle rgba(255, 218, 42, .8)
-            --glass-radial-end rgba(255, 218, 42, 0)
+            --glass-radial-start var(--efu-main)
+            --glass-radial-middle unquote('color-mix(in srgb, var(--efu-main) 80%, transparent)')
+            --glass-radial-end transparent
             background radial-gradient(ellipse at 50% 110%, var(--glass-radial-start) 33%, var(--glass-radial-middle) 66%, var(--glass-radial-end) 100%)
-
+          
           &:hover
             a.totopbtn
               background radial-gradient(ellipse at 50% 110%, var(--glass-radial-start) 33%, var(--glass-radial-middle) 90%, var(--glass-radial-end) 100%)
