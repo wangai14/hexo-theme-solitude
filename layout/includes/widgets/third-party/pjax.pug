@@ -16,6 +16,18 @@ script.
             scrollRestoration: false
         })
 
+        // Pjax dispatches synthetic resize/scroll events on window after every selector switch.
+        // Use a Node target so injected listeners that call event.target.contains() remain compatible.
+        instance.onSwitch = function () {
+            this.state.numPendingSwitches--
+
+            if (this.state.numPendingSwitches === 0) {
+                document.dispatchEvent(new Event('resize', { bubbles: true }))
+                document.dispatchEvent(new Event('scroll', { bubbles: true }))
+                this.afterAllSwitches()
+            }
+        }
+
         Solitude.pjax = instance;
 
         document.querySelectorAll('script[data-pjax]').forEach(item => {
