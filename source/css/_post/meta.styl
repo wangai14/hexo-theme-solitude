@@ -63,9 +63,9 @@
       padding 2px
       background radial-gradient(circle at var(--post-cover-glow-x) var(--post-cover-glow-y), #fff, rgba(255, 255, 255, .7) 20%, rgba(255, 255, 255, .1) 46%, rgba(255, 255, 255, 0) 62%)
       transform translateZ(26px)
-      -webkit-mask linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)
+      -webkit-mask unquote('linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)')
       -webkit-mask-composite xor
-      mask linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)
+      mask unquote('linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)')
       mask-composite exclude
 
     &::after

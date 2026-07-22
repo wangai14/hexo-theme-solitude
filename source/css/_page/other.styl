@@ -222,9 +222,9 @@ div#banners
     &::before
       padding 2px
       background radial-gradient(circle at var(--about-glow-x, 50%) var(--about-glow-y, 50%), #fff, rgba(255, 255, 255, .7) 20%, rgba(255, 255, 255, .1) 46%, rgba(255, 255, 255, 0) 62%)
-      -webkit-mask linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)
+      -webkit-mask unquote('linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)')
       -webkit-mask-composite xor
-      mask linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)
+      mask unquote('linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)')
       mask-composite exclude
 
     &::after
