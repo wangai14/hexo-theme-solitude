@@ -57,7 +57,7 @@
     "hexo-renderer-stylus": "^3.0.0"
   },
   "lint-staged": {
-    "*.{js,json,md,yml,yaml,css,styl,pug}": [
+    "*.{js,json,md,yml,yaml,css}": [
       "prettier --write"
     ]
   },
