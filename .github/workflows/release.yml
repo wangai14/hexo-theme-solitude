@@ -23,10 +23,17 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
+          registry-url: 'https://registry.npmjs.org/'
           node-version: lts/*
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Create .npmrc (npm token)
+        run: |
+          echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > .npmrc
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Release
         run: npx semantic-release
