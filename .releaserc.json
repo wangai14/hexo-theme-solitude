@@ -23,7 +23,7 @@
     [
       "@semantic-release/github",
       {
-        "addReleases": true,
+        "addReleases": "bottom",
         "failCommentCondition": false,
         "releaseSummary": true
       }
